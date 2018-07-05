@@ -2,7 +2,9 @@
     <el-dialog :title="title[type].tit" :visible.sync="show" @close="close" center>
         <div :style="{'text-align':'left'}">{{title[type].con}}</div>
         <div class="con">
-
+            <ul>
+                <li></li>
+            </ul>
         </div>
         <span slot="footer" class="dialog-footer">
             <el-button @click="show=false">&#12288;关闭&#12288;</el-button>
