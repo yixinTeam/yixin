@@ -1,0 +1,115 @@
+.el-header{
+  padding: 0;
+  height: auto!important;
+}
+.el-main{
+  min-height: 100vh;
+}
+.el-checkbox{
+  display: block;
+}
+.el-dialog__header{
+  padding: 10px;
+  border-bottom: 1px solid #e4e4e4;
+}
+.el-dialog__title{
+  font-size: 14px;
+}
+.el-step__title{
+  font-size: 12px;
+}
+.el-loading-parent--relative{
+  height: 100px;
+}
+.el-checkbox-group[name="mission_tag"]{
+  width: 70%;
+  float: right;
+  text-align: left;
+}
+.el-checkbox-group[name="mission_tag"]>label{
+  display: inline-block;
+}
+.el-checkbox-group[name="mission_tag"] .el-checkbox__input{
+  display: none;
+}
+.mission .el-select{
+  float: left;
+  margin-left: 5%;
+}
+.el-icon-success{
+  color: rgb(35,235,185);
+}
+.el-dialog__footer{
+  border-top:1px solid #e4e4e4;
+}
+a{
+  text-decoration: none;
+  color: #409EFF;
+}
+.date_icon{
+  position: absolute;
+  right: 0;
+}
+.line1{
+  font-size:12px;
+  text-align:left;
+}
+.line2{
+  font-size:12px;
+  text-align:left;
+}
+.line3{
+  font-size:12px;
+  text-align:left;
+}
+.line4{
+  font-size:12px;
+  text-align:left;
+}
+.line5{
+  font-size:12px;
+  text-align:left;
+}
+.line6{
+  font-size:12px;
+  text-align:left;
+}
+.line7{
+  font-size:12px;
+  text-align:left;
+}
+.line8{
+  font-size:12px;
+  text-align:left;
+}
+.line9{
+  font-size:12px;
+  text-align:left;
+}
+.line10{
+  font-size:12px;
+  text-align:left;
+}
+.line10{
+  text-align:left;
+}
+.line1_tit{
+  color:#909399;
+}
+.el-table__body-wrapper::-webkit-scrollbar-track
+{
+  background-color: #F5F5F5;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.22);
+}
+/*定义滚动条高宽及背景*/
+.el-table__body-wrapper::-webkit-scrollbar
+{
+  height: 5px;
+  background-color: rgba(153, 153, 153, 0.8);
+}
+/*定义滚动条*/
+.el-table__body-wrapper::-webkit-scrollbar-thumb
+{
+  background-color: #8b8b8b;
+  border-radius: 1px;
+}
