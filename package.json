@@ -5,7 +5,11 @@
   "author": "",
   "private": true,
   "scripts": {
+<<<<<<< HEAD
     "dev": "webpack-dev-server --inline --open --port 8080 --progress --config build/webpack.dev.conf.js",
+=======
+    "dev": "webpack-dev-server --inline --hot --open --port 8080 --progress --config build/webpack.dev.conf.js",
+>>>>>>> fb422856fee86504644447de6584fbff05dabf5d
     "start": "npm run dev",
     "unit": "jest --config test/unit/jest.conf.js --coverage",
     "e2e": "node test/e2e/runner.js",

@@ -24,7 +24,7 @@
                     </template>
                 </el-table-column>
             </el-table>
-            <div tabindex="2" @keyup="deletes">123</div>
+            <div tabindex="2" @keyup="deletes(e)">123</div>
         </div>
         
     </div>

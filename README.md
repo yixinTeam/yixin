@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # yixinkefuweb
 
 #### 项目介绍
@@ -39,6 +40,8 @@
 5. 码云官方提供的使用手册 [http://git.mydoc.io/](http://git.mydoc.io/)
 6. 码云封面人物是一档用来展示码云会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
 =======
+=======
+>>>>>>> fb422856fee86504644447de6584fbff05dabf5d
 # liutong
 
 > A Vue.js project
@@ -69,4 +72,7 @@ npm test
 ```
 
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+<<<<<<< HEAD
 >>>>>>> worker_manager
+=======
+>>>>>>> fb422856fee86504644447de6584fbff05dabf5d

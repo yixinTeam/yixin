@@ -17,7 +17,7 @@
                     <p class="black" :class="{worker_active:worker_state=='3'}" @click="worker_change('3')">停用</p>
                     <p class="black" :class="{worker_active:worker_state=='2'}" @click="worker_change('2')">冻结</p>
                     <p class="black" :class="{worker_active:worker_state=='1'}" @click="worker_change('1')">激活</p>
-                </div>
+                    </div>
                 <div>
                     <p class="grey">创建时间</p>
                     <el-date-picker
