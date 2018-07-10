@@ -1,5 +1,4 @@
 <template>
-<<<<<<< HEAD
     <div class="container">
         <div class="part1">
             <router-link :to="{path:'./worker'}">
@@ -372,15 +371,5 @@ export default {
             this.show = !this.show;
         }
     }
-=======
-    <div>123</div>
-</template>
-<style scoped>
-
-</style>
-<script>
-export default {
-    name:'mission_detail'
->>>>>>> fb422856fee86504644447de6584fbff05dabf5d
 }
 </script>
