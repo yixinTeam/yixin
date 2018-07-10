@@ -116,3 +116,9 @@ a{
 li{
   list-style: none;
 }
+.el-tree-node {
+  float: left;
+}
+.el-tree-node__expand-icon.is-leaf{
+  display: none;
+}

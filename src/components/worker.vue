@@ -7,30 +7,21 @@
                     prefix-icon="el-icon-search"
                     v-model="search" class="search" size="mini">
                 </el-input>
+                <el-button type="info" class="button" :style="{float:'left'}" @click="findSeat">搜索</el-button>
             </div>
             <div class="zhankai" v-if="search_state==false">
                 <el-button type="info" plain class="button" @click="search_change(true)">收起</el-button>
                 <div>
-                    <p class="grey">可见状态</p>
-                    <p class="black" :class="{worker_active:worker_state=='all'}" @click="worker_change('all')">全部</p>
-                    <p class="black" :class="{worker_active:worker_state=='block'}" @click="worker_change('block')">停用</p>
-                    <p class="black" :class="{worker_active:worker_state=='freeze'}" @click="worker_change('freeze')">冻结</p>
-                    <p class="black" :class="{worker_active:worker_state=='active'}" @click="worker_change('active')">激活</p>
+                    <p class="grey">客户状态</p>
+                    <p class="black" :class="{worker_active:worker_state==''}" @click="worker_change('')">全部</p>
+                    <p class="black" :class="{worker_active:worker_state=='3'}" @click="worker_change('3')">停用</p>
+                    <p class="black" :class="{worker_active:worker_state=='2'}" @click="worker_change('2')">冻结</p>
+                    <p class="black" :class="{worker_active:worker_state=='1'}" @click="worker_change('1')">激活</p>
                 </div>
                 <div>
                     <p class="grey">创建时间</p>
                     <el-date-picker
-                    v-model="search_date[0]"
-                    type="daterange"
-                    range-separator="-"
-                    start-placeholder="开始日期"
-                    end-placeholder="结束日期" size="mini" prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
-                    </el-date-picker>
-                </div>
-                <div>
-                    <p class="grey">最近通话</p>
-                    <el-date-picker
-                    v-model="search_date[1]"
+                    v-model="search_date"
                     type="daterange"
                     range-separator="-"
                     start-placeholder="开始日期"
@@ -42,9 +33,8 @@
                 <el-button type="info" plain class="button" @click="search_change(false)">展开</el-button>
                 <div>
                     <p class="grey">筛选条件</p>
-                    <p class="black worker_active" v-show="worker_state=='all'">全部</p>
-                    <el-tag type="info" class="tag" v-if="search_date[0].length>0">{{'创建时间： '+search_date[0][0]+'~'+search_date[0][1]}}</el-tag>
-                    <el-tag type="info" class="tag" v-if="search_date[1].length>0">{{'通话时间： '+search_date[1][0]+'~'+search_date[1][1]}}</el-tag>
+                    <p class="black worker_active" v-show="worker_state==''">全部</p>
+                    <el-tag type="info" class="tag" v-if="search_date.length>0">{{'创建时间： '+search_date[0]+'~'+search_date[1]}}</el-tag>
                 </div>
             </div>
             <div id="operate">
@@ -57,37 +47,39 @@
                 <el-table-column label="坐席账号" class-name="line1" label-class-name="line1_tit" sortable :show-overflow-tooltip=true min-width="120">
                     <template slot-scope="scope">
                         <router-link :to="{path:'./detail', query: { id: '111' }}">
-                            {{scope.row.accountPid}}
+                            {{scope.row.loginName}}
                         </router-link>
                     </template>
                 </el-table-column>
-                <el-table-column prop="fullName" label="坐席昵称" class-name="line2" sortable :show-overflow-tooltip=true min-width="100">
+                <el-table-column prop="shortName" label="坐席昵称" class-name="line2" sortable :show-overflow-tooltip=true min-width="100">
                     <template slot-scope="scope">
                         <div class="father">
-                            <p>{{scope.row.fullName}}</p>
-                            <input type="text" v-model="scope.row.fullName">
+                            <p>{{scope.row.shortName}}</p>
+                            <input type="text" @blur="upSeat(scope.$index, scope.row,'shortName')" v-model="scope.row.shortName">
                         </div>
                     </template>
                 </el-table-column>
                 <el-table-column prop="state" label="坐席状态" class-name="line3" sortable :show-overflow-tooltip=true min-width="100">
                     <template slot-scope="scope">
                         <div class="father">
-                            <p>{{scope.row.state}}</p>
+                            <p v-show="scope.row.state==1">激活中</p>
+                            <p v-show="scope.row.state==2">已冻结</p>
+                            <p v-show="scope.row.state==3">已停用</p>
                             <select v-model="scope.row.state">
-                                <option value="已停用">已停用</option>
-                                <option value="已冻结">已冻结</option>
-                                <option value="激活中">激活中</option>
+                                <option value="3">已停用</option>
+                                <option value="2">已冻结</option>
+                                <option value="1">激活中</option>
                             </select>
                         </div>
                     </template>
                 </el-table-column>
                 <el-table-column prop="create" label="创建时间" class-name="line4" sortable :show-overflow-tooltip=true  min-width="120"> </el-table-column>
-                <el-table-column prop="update" label="最近通话" class-name="line5" sortable :show-overflow-tooltip=true  min-width="120"> </el-table-column>
-                <el-table-column prop="token" label="备注" class-name="line6" sortable :show-overflow-tooltip=true>
+                <el-table-column prop="recentCallTime" label="最近通话" class-name="line5" sortable :show-overflow-tooltip=true  min-width="120"> </el-table-column>
+                <el-table-column prop="desc" label="备注" class-name="line6" sortable :show-overflow-tooltip=true>
                     <template slot-scope="scope">
                         <div class="father">
-                            <p>{{scope.row.token}}</p>
-                            <input type="text" v-model="scope.row.token">
+                            <p>{{scope.row.desc}}</p>
+                            <input type="text" @blur="upSeat(scope.$index, scope.row,'desc')" v-model="scope.row.desc">
                         </div>
                     </template>
                 </el-table-column>
@@ -253,31 +245,16 @@
 
 <script>
 import Dialog from "./component/dialog_worker.vue"
+import jsonfy from "./jsonfy.js"
 export default {
     name:'worker',
     data:function(){
         return {
-            worker_state:'all',
+            worker_state:'',
             search_state:false,
-            search_date:[[],[]],
+            search_date:[],
             search:'',
-            tableData:[{
-                accountPid:'fwjqy001',
-                fullName:'李四',
-                state:'已停用',
-                create:'2018/6/11 14:23',
-                update:'2018/6/11 14:23',
-                token:'ooohhh',
-                passowrd:'123'
-            },{
-                accountPid:'fwjqy002',
-                fullName:'李四',
-                state:'已停用',
-                create:'2018/6/11 14:23',
-                update:'2018/6/11 14:23',
-                token:'ooohhh',
-                passowrd:'123'
-            }],
+            tableData:[],
             multipleSelection: [],
             message:[],
             dialog_type:'0',
@@ -293,13 +270,13 @@ export default {
             this.search_state=value;
         },
         handlecopy(index, row,e){
-            this.message=[{'id':row.accountPid,'name':row.fullName,'password':row.passowrd}];
+            this.message=[{'id':row.loginName,'name':row.shortName,'password':row.passowrd}];
             this.dialog_type=0;
             this.checkbox=false;
             this.dialog_show=true;
         },
         handlereset(index, row,e){
-            this.message=[{'id':row.accountPid,'name':row.fullName,'password':row.passowrd}];
+            this.message=[{'id':row.loginName,'name':row.shortName,'password':row.passowrd}];
             this.dialog_type=1;
             this.checkbox=false;
             this.dialog_show=true;
@@ -308,7 +285,7 @@ export default {
             if(this.multipleSelection.length>0){
                 this.message=[];
                 for(let i=0;i<this.multipleSelection.length;i++){
-                    this.message.push({'id':this.multipleSelection[i].accountPid,'name':this.multipleSelection[i].fullName,'password':this.multipleSelection[i].passowrd})
+                    this.message.push({'id':this.multipleSelection[i].loginName,'name':this.multipleSelection[i].shortName,'password':this.multipleSelection[i].passowrd})
                 }
                 this.dialog_type=0;
                 this.checkbox=true;
@@ -319,7 +296,7 @@ export default {
             if(this.multipleSelection.length>0){
                 this.message=[];
                 for(let i=0;i<this.multipleSelection.length;i++){
-                    this.message.push({'id':this.multipleSelection[i].accountPid,'name':this.multipleSelection[i].fullName,'password':this.multipleSelection[i].passowrd})
+                    this.message.push({'id':this.multipleSelection[i].loginName,'name':this.multipleSelection[i].shortName,'password':this.multipleSelection[i].passowrd})
                 }
                 this.dialog_type=1;
                 this.checkbox=true;
@@ -332,10 +309,54 @@ export default {
         },
         reset:function(){
             this.dialog_show=false;
+        },
+        findSeat:function(){
+            var data={
+                'state':this.worker_state,'startTime':this.search_date!=null?this.search_date[0]:"",'endTime':this.search_date!=null?this.search_date[1]:""
+            };
+            this.$ajax.post('/new/account/findSeatList',data)
+            .then( (res) => {
+                this.tableData=res.data.rows;
+            })
+            .catch(res=>{
+                console.log(res)
+            })
+        },
+        upSeat:function(index,row,item){
+            var item=item;
+            var changeitem=row[item];
+            var data={
+                'id':row.id
+            };
+            jsonfy.jsonfy(data,item,changeitem);
+            this.$ajax.post('/new/account/updateSeat',data)
+            .then( (res) => {
+                if(res.code==200){
+                    window.reload()
+                }
+            })
+            .catch(res=>{
+                alert('修改失败哦')
+            })
         }
     },
     components:{
         Dialog
+    },
+    mounted:function(){
+        var data={
+            'name':'qy1','password':'123456','password2':'123456'
+        };
+        this.$ajax.post('/new/loginValidate',
+            data
+        );
+        this.$ajax.post('/new/account/findSeatList')
+        .then( (res) => {
+            this.tableData=res.data.rows;
+        })
+        .catch(res=>{
+            console.log(res)
+        })
     }
 }
 </script>

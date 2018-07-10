@@ -41,7 +41,7 @@
               <router-link :to="{path:'/manager/index'}">
                 <el-menu-item index="1">
                   <i class="el-icon-menu"></i>
-                  <span slot="title">首页</span>
+                  <span slot="title">首页&#12288;&#12288;&#12288;&#12288;</span>
                 </el-menu-item>
               </router-link>
               <el-submenu index="2">
@@ -53,19 +53,37 @@
                   <router-link :to="{path:'/manager/follow'}">
                     <el-menu-item index="2-1">外呼任务跟踪</el-menu-item>
                   </router-link>
-                  <el-menu-item index="2-2">坐席呼叫统计</el-menu-item>
+                  <router-link :to="{path:'/manager/call_count'}">
+                    <el-menu-item index="2-2">坐席呼叫统计</el-menu-item>
+                  </router-link>
                 </el-menu-item-group>
               </el-submenu>
               <el-submenu index="3">
                 <template slot="title">
                   <i class="el-icon-location"></i>
-                  <span>呼叫管理</span>
+                  <span>呼叫管理&#12288;&#12288;</span>
                 </template>
                 <el-menu-item-group>
                   <router-link :to="{path:'/manager/worker'}">
                     <el-menu-item index="3-1">坐席账号管理</el-menu-item>
                   </router-link>
-                  <el-menu-item index="3-2">客户标签管理</el-menu-item>
+                  <router-link :to="{path:'/manager/label'}">
+                    <el-menu-item index="3-2">客户标签管理</el-menu-item>
+                  </router-link>
+                </el-menu-item-group>
+              </el-submenu>
+              <el-submenu index="4">
+                <template slot="title">
+                  <i class="el-icon-location"></i>
+                  <span>设置&#12288;&#12288;&#12288;&#12288;</span>
+                </template>
+                <el-menu-item-group>
+                  <router-link :to="{path:'/manager/worker'}">
+                    <el-menu-item index="4-1">账号设置</el-menu-item>
+                  </router-link>
+                  <router-link :to="{path:'/manager/label'}">
+                    <el-menu-item index="4-2">系统设置</el-menu-item>
+                  </router-link>
                 </el-menu-item-group>
               </el-submenu>
             </el-menu>

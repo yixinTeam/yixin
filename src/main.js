@@ -6,10 +6,11 @@ import 'element-ui/lib/theme-chalk/index.css';
 import App from './App';
 import router from './router/router.js';
 import axios from 'axios';
-import '../static/css/commen.css'
-import VueClipboard from 'vue-clipboard2'
+import '../static/css/commen.css';
+import VueClipboard from 'vue-clipboard2';
 
 Vue.config.productionTip = false;
+axios.defaults.withCredentials = true;
 Vue.prototype.$ajax = axios;
 Vue.use(ElementUI);
 Vue.use(VueClipboard);

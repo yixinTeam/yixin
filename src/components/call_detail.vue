@@ -1,11 +1,11 @@
 <template>
     <div class="container">
         <div class="part1">
-            <router-link :to="{path:'./worker'}">
-                外呼任务跟踪
+            <router-link :to="{path:'./call_count'}">
+                坐席呼叫统计
             </router-link>
             <i class="el-icon-arrow-right"></i>
-            任务详情
+            呼叫详单
         </div>
         <div class="part2">
             <div class="part2_tit">
@@ -92,10 +92,6 @@
               :total="1000">
             </el-pagination>
         </div>
-        <transition name="slide">
-            <history id="history" v-if="show"></history>
-        </transition>
-        
     </div>
 </template>
 <style scoped>
@@ -121,7 +117,6 @@
         text-align: left;
         padding: 8px;
         font-size: 14px;
-        padding-left: 3vw;
         border-bottom: 1px solid #eee;
         overflow: hidden;
     }
@@ -246,33 +241,10 @@
         box-shadow:-2px 0 5px #ccc;
     }
 </style>
-<style scoped>
-/* .fade-enter-active, .fade-leave-active {
-  transition: all .5s;
-}
-.fade-enter, .fade-leave-to  {
-  transform:translateX(0%)
-} */
-.slide-enter-active {
-  animation: slide-in 0.5s;
-}
-.slide-leave-active {
-  animation: slide-in 0.5s reverse;
-}
-@keyframes slide-in {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(0%);
-  }
-}
-</style>
 
 <script>
-import history from './component/history_talk.vue'
 export default {
-    name:'mission_detail',
+    name:'call_detail',
     data:function(){
         return {
             show:false,
@@ -349,7 +321,6 @@ export default {
             tag_list:[]
         }
     },
-    components:{history},
     methods:{
         search_change:function(value){
             this.search_state=value;
