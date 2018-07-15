@@ -23,36 +23,31 @@
         </div>
         <div  v-show="dialog_active==1&&leading_complete==0">
           <div v-loading="loading"></div>
-          <el-button type="info"  class="dialog_next" @click="leading_complete=1" disabled="leading_state">继续</el-button>
+          <el-button type="info"  class="dialog_next" :disabled="leading_state">继续</el-button>
         </div>
         <div  v-show="dialog_active==1&&leading_complete==1">
-          <div class="data_num">读取完成，共导入{{data_num}}条数据。</div>
+          <div class="data_num">{{data_complete}}</div>
           <el-button type="info"  class="dialog_next" @click="dialog_active = 2">继续</el-button>
         </div>
         <div  v-show="dialog_active==2&&mission_edit==0">
           <div class="mission" :style="{margin:'5% 0'}">
             <p>任务名称</p>
-            <el-select v-model="mission_value" placeholder="请选择" size="mini" filterable=true allow-create=true default-first-option=true>
-              <el-option
-                v-for="item in mission_list"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
+            <el-select v-model="mission_value" placeholder="请选择" size="mini" :filterable='true' :allow-create='true' :default-first-option='true'>
+              <el-option v-for="item in mission_list" :key="item.taskId" :label="item.taskName" :value="item.taskId">
               </el-option>
             </el-select>
           </div>
           <br>
           <div class="mission" :style="{margin:'0 0 10%'}">
             <p>关联客户标签</p>
-            <el-checkbox-group v-model="taglist" size="mini" name="mission_tag">
-              <el-checkbox label="备选项1" border></el-checkbox>
-              <el-checkbox label="备选项2" border></el-checkbox>
+            <el-checkbox-group v-model="tag" size="mini" name="mission_tag">
+              <el-checkbox :label="item.tagName" border v-for="item in taglist" :key="item.tagName" :value="item.id" :style="{'margin':'6px 4px'}"></el-checkbox>
             </el-checkbox-group>
           </div>
-          <el-button type="info"  class="dialog_next" @click="mission_confirm">确认信息</el-button>
+          <el-button type="info"  class="dialog_next" @click="mission_confirm" :disabled="mission_value==''">确认信息</el-button>
         </div>
         <div  v-show="dialog_active==3">
-          <div class="data_num"><i class="el-icon-success"></i>{{data_num}}条数据导入成功</div>
+          <div class="data_num"><i class="el-icon-success"></i>条数据导入成功</div>
           <el-button type="info"  class="dialog_next">完成</el-button>
         </div>
       </el-dialog>
@@ -124,39 +119,33 @@
               leading_complete:0,
               leading_state:false,
               mission_edit:0,
-              data_num:233,
+              data_complete:'',
               mission_value:"",
-              mission_list:[
-                {label:"武林业主",value:"0"},
-                {label:"和平广场",value:"1"}
-              ],
-              taglist:[]
+              mission_list:[],
+              taglist:[],
+              tag:[]
             }
         },
         props:["leading"],
         methods:{
+          //上传模板
             upfiles:function (e) {
-              var file = e.target.files[0];
-              var _this=this;
-
-              //创建读取文件的对象
-              var reader = new FileReader();
-
-              //创建文件读取相关的变量
-              var File;
-
-              //为文件读取成功设置事件
-              reader.onload=function(e) {
-                File = e.target.result;
-                _this.dialog_active=1;
-              };
-
-              //正式读取文件
-              reader.readAsDataURL(file);
+              this.dialog_active=1;
+              let formdata = new FormData();
+              formdata.append('file',event.target.files[0]);
+              this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/importCallTaskClientsCheck',formdata,{headers: { 'Content-Type': 'application/x-www-form-urlencoded' }})
+              .then( (res) => {
+                  if(res.data.code==200){
+                    this.data_complete=res.data.message;
+                    this.leading_complete=1;
+                  }
+              });
             },
+            //确认信息
             mission_confirm:function () {
               this.dialog_active=3;
             },
+            //关闭弹窗
             close:function(){
               this.$emit('reset');
               this.dialog_active=0;
@@ -164,7 +153,22 @@
               this.mission_edit=0;
             }
         },
-        computed:{
+        mounted(){
+          //任务列表数据
+          this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryRightCallTaskList')
+          .then( (res) => {
+              if(res.data.code==200){
+                  this.mission_list=res.data.rows;
+              }
+          });
+          //标签数据
+          this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/tag/findTagList')
+          .then( (res) => {
+            console.log(res);
+              if(res.data.code==200){
+                  this.taglist=res.data.rows;
+              }
+          });
         }
     }
 </script>

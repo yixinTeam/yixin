@@ -8,6 +8,11 @@ import worker from '@/components/worker'
 import call_count from '@/components/call_count'
 import call_detail from '@/components/call_detail'
 import label from '@/components/label'
+import Staff from '@/components/Staff'
+import Staff_index from '@/components/Staff_index'
+import Staff_stage from '@/components/Staff_stage'
+import Staff_call_count from '@/components/Staff_call_count'
+import test from '@/components/test'
 Vue.use(Router)
 
 export default new Router({
@@ -26,5 +31,16 @@ export default new Router({
       {path:'call_detail',component:call_detail},
       {path:'label',component:label},
     ]
+  }, {
+    path: '/Staff',
+    component: Staff,
+    children:[
+      {path:'index',component:Staff_index},
+      {path:'stage',component:Staff_stage},
+      {path:'call_count',component:Staff_call_count}
+    ]
+  }, {
+    path: '/test',
+    component: test
   }]
 })

@@ -17,7 +17,7 @@
                     <p class="black" :class="{worker_active:worker_state=='3'}" @click="worker_change('3')">停用</p>
                     <p class="black" :class="{worker_active:worker_state=='2'}" @click="worker_change('2')">冻结</p>
                     <p class="black" :class="{worker_active:worker_state=='1'}" @click="worker_change('1')">激活</p>
-                    </div>
+                </div>
                 <div>
                     <p class="grey">创建时间</p>
                     <el-date-picker
@@ -347,15 +347,12 @@ export default {
         var data={
             'name':'qy1','password':'123456','password2':'123456'
         };
-        this.$ajax.post('/new/loginValidate',
+        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
             data
         );
-        this.$ajax.post('/new/account/findSeatList')
+        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/account/findSeatList')
         .then( (res) => {
             this.tableData=res.data.rows;
-        })
-        .catch(res=>{
-            console.log(res)
         })
     }
 }

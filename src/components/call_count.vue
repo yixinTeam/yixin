@@ -31,9 +31,11 @@
                 <el-table-column prop="p_biaoqian2" label="平均呼叫时长" class-name="line8" sortable :show-overflow-tooltip=true min-width="120"> </el-table-column>
                 <el-table-column prop="p_caozuo" class-name="line11" label="操作"  min-width="60">
                     <template slot-scope="scope">
+                        <router-link :to="{path:'./call_detail'}">
                         <el-button
                         size="mini" type="text"
                         @click="handlexx(scope.$index, scope.row)">呼叫详单</el-button>
+                        </router-link>
                     </template>
                 </el-table-column>
             </el-table>

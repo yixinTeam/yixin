@@ -1,7 +1,7 @@
 <template>
     <div>
       <el-dialog title="分配客户" :visible.sync="assign" @close="close" center>
-        <div :style="{'text-align':'left'}">为分配客户总量：{{totals}}人</div>
+        <div :style="{'text-align':'left'}">未分配客户总量：{{totals}}人</div>
         <div class="tit">
             <p>坐席</p>
             <p>分配客户数量(人)</p>
@@ -12,9 +12,9 @@
                     <el-select v-model="workerlist[index]" placeholder="请选择坐席" size="mini">
                         <el-option
                         v-for="item in worker"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
+                        :key="item.id"
+                        :label="item.shortName"
+                        :value="item.id">
                         </el-option>
                     </el-select>
                 </li>
@@ -217,6 +217,12 @@ export default {
         }
     },
     mounted:function(){
+        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/account/findSeatList',{'state':1})
+        .then( (res) => {
+            if(res.data.code==200){
+                this.worker=res.data.rows;
+            }
+        })
         for(var i=0;i<this.worker.length;i++){
             this.workerlist[i]='';
             this.workernum[i]='';

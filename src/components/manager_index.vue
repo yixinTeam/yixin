@@ -210,7 +210,8 @@ export default {
                                 textStyle: {
                                     fontSize: '15',
                                     fontWeight: 'bold'
-                                }
+                                },
+                                formatter: "{b}({d}%)"
                             }
                         },
                         labelLine: {

@@ -2,7 +2,7 @@
     <div class="container">
         <div class="part2">
             <div class="part2_tit">
-                <el-button type="info" class="button" :style="{float:'left'}">新增用户标签</el-button>
+                <el-button type="info" class="button" :style="{float:'left'}" @click="add">新增用户标签</el-button>
                 <el-button plain class="button" :style="{'float':'left'}">效果预览</el-button>
                 <el-tooltip class="item" effect="dark" content="客户标签可以与外呼任务关联，让坐席在与客户沟通时快速标记用户，以便后续的客户分类与跟进。" placement="right">
                 <el-button type="text" :style="{'float':'right','color':'#999'}" size="mini"><i class="el-icon-question"></i>什么是客户标签</el-button>
@@ -24,9 +24,8 @@
                     </template>
                 </el-table-column>
             </el-table>
-            <div tabindex="2" @keyup="deletes(e)">123</div>
         </div>
-        
+        <tag :see="add_tag" @reset="reset"></tag>
     </div>
 </template>
 <style scoped>
@@ -58,12 +57,14 @@
 </style>
 
 <script>
+import tag from './component/dialog_tag.vue'
 export default {
     name:'labels',
     data:function(){
         return {
             search:'',
             leading_date:[],
+            add_tag:false,
             tableData: [{
                 p_name: '是否重点跟进',
                 p_phone: '重点跟进；非重点跟进；',
@@ -79,6 +80,7 @@ export default {
             }]
         }
     },
+    components:{tag},
     methods:{
         handlefp:function(){
 
@@ -86,8 +88,11 @@ export default {
         handlexx:function(){
             this.show = !this.show;
         },
-        deletes:function(){
-            console.log(1)
+        add:function(){
+            this.add_tag=true;
+        },
+        reset:function(){
+            this.add_tag=false;
         }
     }
 }

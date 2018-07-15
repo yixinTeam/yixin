@@ -9,10 +9,10 @@
             </div>
             <div class="part1_nav">
                 <p class="grey">选择展示任务</p>
-                <el-checkbox-group v-model="checkedlist" :min="0" :max="4" class="ul" @change='change'>
-                    <el-checkbox v-for="item in position" :label="item.key" :key="item.key" class="li">{{item.value}}</el-checkbox>
+                <el-checkbox-group v-model="checkedlist" :min="0" :max="4" class="ul" :style="{'text-align':'left','padding':'0 8px'}">
+                    <el-checkbox v-for="item in position" :label="item.taskId" :key="item.taskId" class="li">{{item.taskName}}</el-checkbox>
                 </el-checkbox-group>
-                <el-button type="info" plain class="part1_button">确定</el-button>
+                <el-button type="info" plain class="part1_button" @click="show_mission">确定</el-button>
             </div>
         </div>
         <div class="part2">
@@ -22,7 +22,7 @@
                     prefix-icon="el-icon-search"
                     v-model="search" class="search" size="mini">
                 </el-input>
-                <el-button type="info" class="button" :style="{float:'left'}">搜索</el-button>
+                <el-button type="info" class="button" :style="{float:'left'}" @click="missoin_search">搜索</el-button>
                 <el-button type="info" plain class="button">导出当前结果</el-button>
                 <el-button type="info"  class="button" @click="lead_in">导入客户</el-button>
                 <Dialog v-bind:leading="leading" @reset="reset"></Dialog>
@@ -31,17 +31,12 @@
                 <el-button type="info" plain class="button" @click="search_change(true)">收起</el-button>
                 <div>
                     <p class="grey">可见状态</p>
-                    <p class="black" :class="{see_active:see_state=='all'}" @click="see_change('all')">所有人可见</p>
-                    <p class="black" :class="{see_active:see_state=='manager'}" @click="see_change('manager')">仅管理员可见</p>
+                    <p class="black" :class="{see_active:see_state=='1'}" @click="see_change('1')">所有人可见</p>
+                    <p class="black" :class="{see_active:see_state=='0'}" @click="see_change('0')">仅管理员可见</p>
                 </div>
                 <div>
                     <p class="grey">创建时间</p>
-                    <el-date-picker
-                    v-model="search_date"
-                    type="daterange"
-                    range-separator="-"
-                    start-placeholder="开始日期"
-                    end-placeholder="结束日期" size="mini" prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
+                    <el-date-picker v-model="search_date" type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" size="mini"  prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </div>
             </div>
@@ -49,6 +44,8 @@
                 <el-button type="info" plain class="button" @click="search_change(false)">展开</el-button>
                 <div>
                     <p class="grey">筛选条件</p>
+                    <el-tag type="info" class="tag">{{see_state=='0'?'所有人可见':'仅管理员可见'}}</el-tag>
+                
                     <el-tag type="info" class="tag" v-if="search_date.length>0">{{'创建时间： '+search_date[0]+'~'+search_date[1]}}</el-tag>
                 </div>
             </div>
@@ -60,15 +57,27 @@
                         </router-link>
                     </template>
                 </el-table-column>
-                <el-table-column prop="p_all" label="总客户" class-name="line2" sortable  :show-overflow-tooltip=true> </el-table-column>
-                <el-table-column prop="p_fenpei" label="已分配" class-name="line3" sortable :show-overflow-tooltip=true > </el-table-column>
-                <el-table-column prop="p_hu" label="已呼" class-name="line4" sortable :show-overflow-tooltip=true> </el-table-column>
-                <el-table-column prop="p_success" label="成功" class-name="line5" sortable :show-overflow-tooltip=true> </el-table-column>
-                <el-table-column prop="p_fail" label="失败" class-name="line6" sortable :show-overflow-tooltip=true> </el-table-column>
-                <el-table-column prop="p_doing" label="跟进" class-name="line7" sortable :show-overflow-tooltip=true> </el-table-column>
-                <el-table-column prop="p_biaoqian" label="关联客户标签" class-name="line8" sortable :show-overflow-tooltip=true min-width="150"> </el-table-column>
-                <el-table-column prop="p_time" label="创建时间" class-name="line9" sortable :show-overflow-tooltip=true min-width="120"> </el-table-column>
-                <el-table-column prop="p_see" label="可见状态" class-name="line10" :show-overflow-tooltip=true min-width="100"> </el-table-column>
+                <el-table-column prop="numberTotal" label="总客户" class-name="line2" sortable  :show-overflow-tooltip=true> </el-table-column>
+                <el-table-column label="已分配" class-name="line3" sortable :show-overflow-tooltip=true >
+                    <template slot-scope="scope">
+                        {{scope.row.numberTotal-scope.row.unallocatedNum}}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="calledNum" label="已呼" class-name="line4" sortable :show-overflow-tooltip=true> </el-table-column>
+                <el-table-column prop="successNum" label="成功" class-name="line5" sortable :show-overflow-tooltip=true> </el-table-column>
+                <el-table-column prop="failureNum" label="失败" class-name="line6" sortable :show-overflow-tooltip=true> </el-table-column>
+                <el-table-column prop="processingNum" label="跟进" class-name="line7" sortable :show-overflow-tooltip=true> </el-table-column>
+                <el-table-column prop="tags" label="关联客户标签" class-name="line8" sortable :show-overflow-tooltip=true min-width="150">
+                    <template slot-scope="scope">
+                        <span v-for="item in scope.row.tags" :key="item">{{item}};</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="create" label="创建时间" class-name="line9" sortable :show-overflow-tooltip=true min-width="120"> </el-table-column>
+                <el-table-column prop="visibleState" label="可见状态" class-name="line10" :show-overflow-tooltip=true min-width="100">
+                    <template slot-scope="scope">
+                        {{scope.row.visibleState==0?'仅管理员可见':'所有人可见'}}
+                    </template>
+                </el-table-column>
                 <el-table-column prop="p_caozuo" class-name="line11" label="操作"  min-width="160">
                     <template slot-scope="scope">
                         <el-button
@@ -81,9 +90,7 @@
                     </template>
                 </el-table-column>
             </el-table>
-            <el-pagination
-              layout="prev, pager, next"
-              :total="1000">
+            <el-pagination layout="prev, pager, next" :page-size="10" :total="page_count" @current-change='page_change'>
             </el-pagination>
         </div>
         <assign v-bind:assign="assign" :total='p_assign' @reset="reset"></assign>
@@ -235,70 +242,24 @@ export default {
     data:function(){
         return {
             missoin_data:[],
-            position:[{'value':'和平广场展会','key':'1'},{'value':'和平广场展会','key':'2'},{'value':'和平广场展会','key':'3'},{'value':'和平广场展会','key':'4'},{'value':'和平广场展会','key':'5'},{'value':'和平广场展会','key':'6'},{'value':'和平广场展会','key':'7'},{'value':'和平广场展会','key':'8'},{'value':'和平广场展会','key':'9'}],
+            position:[],
             checkedlist:[],
             search:'',
             search_state:false,
-            see_state:'all',
+            see_state:'1',
             search_date:[],
             leading:false,
             assign:false,
             p_assign:'',
-            tableData: [{
-            name: '王小虎和他的朋友',
-            p_all: '500',
-            p_fenpei:'400',
-            p_hu:'200',
-            p_success:'80',
-            p_fail:'100',
-            p_doing:'20',
-            p_biaoqian:'是否重点跟进；大头；钱多',
-            p_time:'2018/6/11 14:23',
-            p_see:'所有人可见',
-            p_key:'0'
-            },{
-            name: '武林一号业主',
-            p_all: '600',
-            p_fenpei:'400',
-            p_hu:'200',
-            p_success:'80',
-            p_fail:'100',
-            p_doing:'20',
-            p_biaoqian:'是否重点跟进；大头；钱多',
-            p_time:'2018/6/11 14:23',
-            p_see:'所有人可见',
-            p_key:'1'
-            },{
-            name: '武林二号业主',
-            p_all: '800',
-            p_fenpei:'400',
-            p_hu:'200',
-            p_success:'80',
-            p_fail:'100',
-            p_doing:'20',
-            p_biaoqian:'是否重点跟进；大头；钱多',
-            p_time:'2018/6/11 14:23',
-            p_see:'所有人可见',
-            p_key:'2'
-            }, {
-            name: '武林三号业主',
-            p_all: '500',
-            p_fenpei:'400',
-            p_hu:'200',
-            p_success:'80',
-            p_fail:'100',
-            p_doing:'20',
-            p_biaoqian:'是否重点跟进；大头；钱多',
-            p_time:'2018/6/11 14:23',
-            p_see:'所有人可见',
-            p_key:'3'
-            }]
+            tableData: [],
+            page_count:1
         }
     },
     components:{
       Dialog,assign
     },
     computed:{
+        //饼图数据
         missoin:{
             get: function () {
                 return this.missoin_data;
@@ -309,6 +270,7 @@ export default {
         },
     },
     methods:{
+        //画饼图
         drawPie:function(item){
             var myChart = echarts.init(document.getElementsByClassName('svg')[item.id_num]);
             var option = {
@@ -346,7 +308,8 @@ export default {
                                 textStyle: {
                                     fontSize: '15',
                                     fontWeight: 'bold'
-                                }
+                                },
+                                formatter: "{b}({d}%)"
                             }
                         },
                         labelLine: {
@@ -360,13 +323,18 @@ export default {
             };
             myChart.setOption(option);
         },
+        //初始化饼图数据
         missoin_init:function(item){
-            for(var i=0;i<item.length;i++){
-                this.drawPie(item[i]);
-            };
-        },
-        change:function(){
-            console.log(this.checkedlist)
+            for(let i=0;i<4;i++){
+                if(i<item.length){
+                    let obj={'id_num':i,'id':item[i].taskName,'key':item[i].taskId,data:[{'name':'发展成功','value':item[i].successNum},{'name':'发展失败','value':item[i].failureNum},{'name':'继续跟进','value':item[i].processingNum},{'name':'未分配','value':item[i].unallocatedNum}]}
+                    this.drawPie(obj);
+                }else{
+                    let obj={'id_num':i};
+                    this.drawPie(obj);
+                }
+                
+            }
         },
         see_change:function(value){
             this.see_state=value;
@@ -374,31 +342,83 @@ export default {
         search_change:function(value){
             this.search_state=value;
         },
+        //打开导入客户弹窗
         lead_in:function(){
             this.leading = true;
             this.assign=false;
         },
+        //打开分配客户弹窗
         handlefp:function(index,row){
             this.assign=true;
             this.leading=false;
-            this.p_assign=row.p_all-row.p_fenpei;
+            this.p_assign=row.unallocatedNum;
         },
         handledr:function(index,row){
             console.log(index,row)
         },
+        //关闭弹窗
         reset:function(){
             this.assign=false;
             this.leading=false;
+        },
+        show_mission(){
+            //选择展示任务
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryIndexCallTaskList',
+                this.checkedlist
+            ).then((res)=>{
+                this.missoin_init(res.data.info);
+            })
+        },
+        //页码改变
+        page_change(val){
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryCallTaskList',{pageNum:val})
+            .then( (res) => {
+                if(res.data.code==200){
+                    this.tableData=res.data.rows;
+                }
+            })
+        },
+        //条件搜索
+        missoin_search:function(){
+            console.log(this.search)
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryCallTaskList',{startTime:this.search_date!=null?this.search_date[0]:'',endTime:this.search_date!=null?this.search_date[1]:'',nameLike:this.search,visibleState:this.see_state})
+            .then( (res) => {
+                console.log(res);
+                if(res.data.code==200){
+                    this.tableData=res.data.rows;
+                }
+            })
         }
     },
     mounted:function(){
-        var arr=[
-                {id_num:'0',id:'武林业主',show_tit:false,data:[{value:335, name:'发展成功'},{value:310, name:'发展失败'},{value:234, name:'未分配'},{value:135, name:'继续跟进'}]},
-                {id_num:'1',id:'和平广场',show_tit:false,data:[{value:335, name:'发展成功'},{value:310, name:'发展失败'},{value:234, name:'未分配'},{value:135, name:'继续跟进'}]},
-                {id_num:'2',id:'和平广场',show_tit:false,data:[{value:335, name:'发展成功'},{value:310, name:'发展失败'},{value:234, name:'未分配'},{value:135, name:'继续跟进'}]},
-                {id_num:'3',id:'和平广场',show_tit:false,data:[{value:335, name:'发展成功'},{value:310, name:'发展失败'},{value:234, name:'未分配'},{value:135, name:'继续跟进'}]}
-            ]
-        this.missoin_init(arr);
+        var data={
+            'name':'wshqy','password':'123456','password2':'123456'
+        };
+        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
+            data
+        );
+        //左侧饼图数据
+        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryIndexCallTaskList')
+        .then( (res) => {
+            if(res.data.code==200){
+                this.missoin_init(res.data.info);
+            }
+        });
+        //右侧任务多选列表
+        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryRightCallTaskList')
+        .then( (res) => {
+            if(res.data.code==200){
+                this.position=res.data.rows;
+            }
+        });
+        //下方任务列表
+        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryCallTaskList',{requireTotalCount:true})
+        .then( (res) => {
+            if(res.data.code==200){
+                this.page_count=res.data.totalCount;
+                this.tableData=res.data.rows;
+            }
+        })
     }
 }
 </script>
