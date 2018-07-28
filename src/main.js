@@ -8,7 +8,7 @@ import router from './router/router.js';
 import axios from 'axios';
 import '../static/css/commen.css';
 import VueClipboard from 'vue-clipboard2';
-
+Vue.config.debug = true;
 Vue.config.productionTip = false;
 axios.defaults.withCredentials = true;
 Vue.prototype.$ajax = axios;

@@ -1,6 +1,6 @@
 <template>
     <div>
-      <el-dialog title="新增客户标签" :visible.sync="see" @close="close" center>
+      <el-dialog title="新增客户标签" :visible.sync="see" @close="close" center @open="open">
         <div class="tit">
             <p>属性名称</p>
             <el-input v-model="tag_name" placeholder="请输入内容" size="small"></el-input>
@@ -25,7 +25,7 @@
         </div>
         <span slot="footer" class="dialog-footer">
             <el-button @click="see=false" size="small">&#12288;取消&#12288;</el-button>
-            <el-button type="info" @click="see=false" size="small">&#12288;保存&#12288;</el-button>
+            <el-button type="info" @click="save_tag" size="small">&#12288;保存&#12288;</el-button>
         </span>
       </el-dialog>
     </div>
@@ -55,13 +55,22 @@ export default {
            tag_name:'',
            tag_value:'',
            tag_list:[],
-           tag_default:''
+           tag_default:'',
+           id:''
         }
     },
-    props:['see'],
+    props:['see','data'],
     methods:{
         close:function(){
             this.$emit("reset");
+        },
+        open(){
+            if(this.data!=[]){
+                this.tag_name=this.data.tagName;
+                this.tag_list=this.data.tags;
+                this.tag_default=this.data.tagDefaultValue;
+                this.id=this.data.id;
+            }
         },
         input_focus:function(){
             document.getElementById('tag').focus();
@@ -79,6 +88,16 @@ export default {
         },
         test:function(){
 
+        },
+        save_tag:function(){
+            var data={'tagName':this.tag_name,'tagValue':this.tag_list.join(';'),'tagDefaultValue':this.tag_default,'id':this.id}
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/tag/addOrUpdateTag',data)
+            .then( (res) => {
+                if(res.data.code==200){
+                    this.see=false;
+                    this.$emit('update');
+                }
+            });
         }
     }
 }

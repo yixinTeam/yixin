@@ -38,7 +38,7 @@
         </div>
         <span slot="footer" class="dialog-footer">
             <el-button @click="assign=false">&#12288;取消&#12288;</el-button>
-            <el-button type="info" @click="assign=false">完成分配</el-button>
+            <el-button type="info" @click="save">完成分配</el-button>
         </span>
       </el-dialog>
     </div>
@@ -139,30 +139,10 @@ export default {
             workerlist:[],
             workernum:[],
             show_num:3,
-            worker:[{
-            value: '选项1',
-            label: '坐席1',
-            key:0
-            }, {
-            value: '选项2',
-            label: '坐席2',
-            key:1
-            }, {
-            value: '选项3',
-            label: '坐席3',
-            key:2
-            }, {
-            value: '选项4',
-            label: '坐席4',
-            key:3
-            }, {
-            value: '选项5',
-            label: '坐席5',
-            key:4
-            }]
+            worker:[]
         }
     },
-    props:['assign','total'],
+    props:['assign','total','taskId'],
     methods:{
         close:function(){
             for(var i=0;i<this.worker.length;i++){
@@ -209,6 +189,22 @@ export default {
                 e.target.value=e.target.value.replace(/0/gi,"")
             }
             e.target.value=e.target.value.replace(/\D/gi,"")
+        },
+        save(){
+            var allocateInfos=[];
+            this.workerlist.map((item,index)=>{
+                if(item!=''&&this.workernum[index]!=''){
+                    allocateInfos.push({'allocateNum':this.workernum[index],'seatAccountId':this.workerlist[index]})
+                }
+            })
+            var data={'taskId':this.taskId,'allocateType':1,allocateInfos};
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/allocateCallTask',data)
+            .then( (res) => {
+                if(res.data.code==200){
+                    //this.worker=res.data.rows;
+                    this.assign=false;
+                }
+            })
         }
     },
     computed:{
@@ -221,12 +217,13 @@ export default {
         .then( (res) => {
             if(res.data.code==200){
                 this.worker=res.data.rows;
+                for(var i=0;i<this.worker.length;i++){
+                    this.workerlist[i]='';
+                    this.workernum[i]='';
+                }
             }
         })
-        for(var i=0;i<this.worker.length;i++){
-            this.workerlist[i]='';
-            this.workernum[i]='';
-        }
+        
     }
 }
 </script>

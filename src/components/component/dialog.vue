@@ -33,22 +33,22 @@
           <div class="mission" :style="{margin:'5% 0'}">
             <p>任务名称</p>
             <el-select v-model="mission_value" placeholder="请选择" size="mini" :filterable='true' :allow-create='true' :default-first-option='true'>
-              <el-option v-for="item in mission_list" :key="item.taskId" :label="item.taskName" :value="item.taskId">
+              <el-option v-for="item in mission_list" :key="item.taskId" :label="item.taskName" :value="item.taskName">
               </el-option>
             </el-select>
           </div>
           <br>
           <div class="mission" :style="{margin:'0 0 10%'}">
             <p>关联客户标签</p>
-            <el-checkbox-group v-model="tag" size="mini" name="mission_tag">
-              <el-checkbox :label="item.tagName" border v-for="item in taglist" :key="item.tagName" :value="item.id" :style="{'margin':'6px 4px'}"></el-checkbox>
+            <el-checkbox-group v-model="tag" size="mini" name="mission_tag" @change="change">
+              <el-checkbox :label="item.tagName" border v-for="item in taglist" :key="item.id" :style="{'margin':'6px 4px'}"></el-checkbox>
             </el-checkbox-group>
           </div>
           <el-button type="info"  class="dialog_next" @click="mission_confirm" :disabled="mission_value==''">确认信息</el-button>
         </div>
         <div  v-show="dialog_active==3">
-          <div class="data_num"><i class="el-icon-success"></i>条数据导入成功</div>
-          <el-button type="info"  class="dialog_next">完成</el-button>
+          <div class="data_num"><i class="el-icon-success"></i>{{result[0]}}<br>{{result[1]}}</div>
+          <el-button type="info"  class="dialog_next" @click="leading=false">完成</el-button>
         </div>
       </el-dialog>
     </div>
@@ -98,6 +98,8 @@
     .data_num{
       font-size: 16px;
       margin:10% auto;
+      text-align: left;
+       width: fit-content;
     }
     .mission{
       overflow: hidden;
@@ -107,6 +109,11 @@
       width: 25%;
       text-align: right;
       margin: 0;
+    }
+    .el-icon-success{
+      font-size: 26px;
+      float: left;
+      line-height: 41px;
     }
 </style>
 <script>
@@ -123,7 +130,9 @@
               mission_value:"",
               mission_list:[],
               taglist:[],
-              tag:[]
+              tag:[],
+              tagids:[],
+              result:[]
             }
         },
         props:["leading"],
@@ -143,7 +152,14 @@
             },
             //确认信息
             mission_confirm:function () {
-              this.dialog_active=3;
+              this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/insertCallTask',{"taskTag":{"tagIds":this.tagids,"taskName":this.mission_value}})
+              .then( (res) => {
+                  if(res.data.code==200){
+                    this.result=res.data.info.split('</br>');
+                    console.log(res.data.info,this.result)
+                    this.dialog_active=3;
+                  }
+              });
             },
             //关闭弹窗
             close:function(){
@@ -151,6 +167,18 @@
               this.dialog_active=0;
               this.leading_complete=0;
               this.mission_edit=0;
+            },
+            change(item){
+              var arr=[];
+              for(let i=0;i<this.tag.length;i++){
+                var str=this.tag[i];
+                for(let j=0;j<this.taglist.length;j++){
+                  if(str==this.taglist[j].tagName){
+                    arr.push(this.taglist[j].id);
+                  }
+                }
+              }
+              this.tagids=arr;
             }
         },
         mounted(){
@@ -164,7 +192,6 @@
           //标签数据
           this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/tag/findTagList')
           .then( (res) => {
-            console.log(res);
               if(res.data.code==200){
                   this.taglist=res.data.rows;
               }

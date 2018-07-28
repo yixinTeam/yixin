@@ -5,9 +5,9 @@
             <ul>
                 <li v-for="(item,index) in messages" :key="item.id">
                     <div class="list">
-                        <p>{{item.id}}</p>
-                        <p>{{item.name}}</p>
-                        <p>{{item.password}}</p>
+                        <p>坐席账号：{{item.loginName}}</p>
+                        <p>坐席昵称：{{item.shortName}}</p>
+                        <p>坐席密码：{{item.password2}}</p>
                         <div class="mask" v-show="copy_success==index">
                             <i class="el-icon-success"></i>坐席信息已复制
                         </div>
@@ -107,7 +107,7 @@ export default {
             this.$emit("reset");
         },
         copy:function(index){
-            let message=this.message[index].id+'\n'+this.message[index].name+'\n'+this.message[index].password;
+            let message=this.message[index].loginName+'\n'+this.message[index].shortName+'\n'+this.message[index].password2;
             let _index=index;
             let _this=this;
             this.$copyText(message).then(function (e) {
@@ -119,11 +119,11 @@ export default {
         copyall:function(){
             let message='';
             for(let i=0;i<this.message.length;i++){
-                message+=this.message[i].id+'\n'+this.message[i].name+'\n'+this.message[i].password+'\n';
+                message+=this.message[i].loginName+'\n'+this.message[i].shortName+'\n'+this.message[i].password2+'\n';
             }
             let _this=this;
             this.$copyText(message).then(function (e) {
-                alert(e.text);
+                console.log('copy完成')
             }, function (e) {
                 alert('Can not copy')
             })

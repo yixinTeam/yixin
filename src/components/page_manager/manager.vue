@@ -40,13 +40,13 @@
               active-text-color="#ffd04b">
               <router-link :to="{path:'/manager/index'}">
                 <el-menu-item index="1">
-                  <i class="el-icon-menu"></i>
+                  <i class="el-icon-index"></i>
                   <span slot="title">首页&#12288;&#12288;&#12288;&#12288;</span>
                 </el-menu-item>
               </router-link>
               <el-submenu index="2">
                 <template slot="title">
-                  <i class="el-icon-location"></i>
+                  <i class="el-icon-waihu"></i>
                   <span>外呼任务管理</span>
                 </template>
                 <el-menu-item-group>
@@ -60,7 +60,7 @@
               </el-submenu>
               <el-submenu index="3">
                 <template slot="title">
-                  <i class="el-icon-location"></i>
+                  <i class="el-icon-waihu"></i>
                   <span>呼叫管理&#12288;&#12288;</span>
                 </template>
                 <el-menu-item-group>
@@ -74,7 +74,7 @@
               </el-submenu>
               <el-submenu index="4">
                 <template slot="title">
-                  <i class="el-icon-location"></i>
+                  <i class="el-icon-shezhi"></i>
                   <span>设置&#12288;&#12288;&#12288;&#12288;</span>
                 </template>
                 <el-menu-item-group>
@@ -91,12 +91,46 @@
         </el-row>
       </el-aside>
       <el-main>
-        <router-view class="content"></router-view>
+        <router-view class="content" v-if="alive"></router-view>
       </el-main>
     </el-container>
   </el-container>
 </template>
 <style scoped>
+.el-icon-index:before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    display: block;
+    background: url('../../../static/icon/index.png');
+    background-size:18px 18px;
+}
+.el-icon-waihu:before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    display: block;
+    background: url('../../../static/icon/waihu.png');
+    background-size:18px 18px;
+}
+.el-icon-menu:before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    margin: 0px 4px;
+    display: block;
+    background: url('../../../static/icon/menu.png');
+    background-size: 20px 20px;
+    transform: translateY(3px);
+}
+.el-icon-shezhi:before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    display: block;
+    background: url('../../../static/icon/shezhi.png');
+    background-size:18px 18px;
+}
 .tac {
 	width: 200px;
   height: 100vh;
@@ -111,10 +145,10 @@
   border-bottom: 1px solid rgba(84, 92, 100,0.8);
 }
 .title{
-  line-height: 40px;
+  line-height: 53px;
 }
 .notify{
-  margin: 4px 0;
+  margin: 10px 0;
 }
 .hello{
   width: 100vw;
@@ -128,11 +162,12 @@ a{
 </style>
 
 <script>
-import selec from './component/select.vue';
+import selec from '../component/select.vue';
 export default {
 	name: 'manager',
 	data() {
 		return {
+      alive:true,
       notify:'3',
       identity:{'list':[{'states':'张领导','key':'1'},{'states':'登出','key':'2'}],'default':'张领导'}
 		};
@@ -143,11 +178,28 @@ export default {
 		},
 		handleClose(key, keyPath) {
 			console.log(key, keyPath);
+    },
+    reload(){
+      this.alive=false;
+      this.$nextTick(function(){
+        this.alive=true;
+      })
+    }
+  },
+  mounted(){
+    var data={
+      'name':'wshqy','password':'123456','password2':'123456'
+    };
+    this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
+      data
+    )
+  },
+	provide(){
+    return {
+      reload:this.reload
     }
   }
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-</style>

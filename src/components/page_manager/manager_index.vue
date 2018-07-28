@@ -18,7 +18,9 @@
         <div class="part2">
             <div class="p2_tit">
                 <p>外呼任务完成情况</p>
+                <router-link :to="{path:'/manager/follow'}">
                 <p class="grey">查看完整数据<i class="el-icon-d-arrow-right"></i></p>
+                </router-link>
             </div>
             <div class="svg"></div>
             <div class="svg"></div>
@@ -29,11 +31,14 @@
             <div class="p3_tit">
                 <p>坐席呼叫统计</p>
                 <el-radio-group v-model="time_past" class="p3_radio" @change="change">
-                    <el-radio :label="1">过去24小时</el-radio>
-                    <el-radio :label="2">过去7天</el-radio>
-                    <el-radio :label="3">过去30天</el-radio>
+                    <el-radio :label="1">今天</el-radio>
+                    <el-radio :label="2">昨天</el-radio>
+                    <el-radio :label="7">过去7天</el-radio>
+                    <el-radio :label="30">过去30天</el-radio>
                 </el-radio-group>
+                <router-link :to="{path:'/manager/worker'}">
                 <p class="grey">查看完整数据<i class="el-icon-d-arrow-right"></i></p>
+                </router-link>
             </div>
             <div class="svg_work"></div>
             <div class="svg_work"></div>
@@ -77,7 +82,7 @@
     .p2_tit>p:nth-child(1){
         float: left;
     }
-    .p2_tit>p:nth-child(2){
+    .p2_tit>a>p{
         float: right;
     }
     .p3_tit{
@@ -91,7 +96,7 @@
     .p3_tit>p:nth-child(1){
         float: left;
     }
-    .p3_tit>p.grey{
+    .p3_tit>a>p.grey{
         float: right;
     }
     .svg{
@@ -108,13 +113,13 @@
 
 <script>
 let echarts = require('echarts/lib/echarts');
-  // 引入饼图组件
-  require('echarts/lib/chart/pie')
-  require('echarts/lib/chart/bar')
-  // 引入提示框和图例组件
-  require('echarts/lib/component/tooltip')
-  require('echarts/lib/component/legend')
-  require('echarts/lib/component/title')
+// 引入饼图组件
+require('echarts/lib/chart/pie')
+require('echarts/lib/chart/bar')
+// 引入提示框和图例组件
+require('echarts/lib/component/tooltip')
+require('echarts/lib/component/legend')
+require('echarts/lib/component/title')
 export default {
     name:'manager_index',
     data:function(){
@@ -122,21 +127,26 @@ export default {
             time:{remin:'300',all:'1000'},
             worker:{num:'8',all:'10'},
             mission_data:[],
-            time_past:'',
-            worker_time_data:[],
-            worker_person_data:[],
-            mission_data:[]
+            worker_data:[],
+            time_past:''
         }
     },
     mounted() {
-        this.mission_init([
-                {id_num:'0',id:'武林业主',show_tit:false,data:[{value:335, name:'发展成功'},{value:310, name:'发展失败'},{value:234, name:'未分配'},{value:135, name:'继续跟进'}]},
-                {id_num:'1',id:'和平广场',show_tit:false,data:[{value:335, name:'发展成功'},{value:310, name:'发展失败'},{value:234, name:'未分配'},{value:135, name:'继续跟进'}]},
-                {id_num:'2',id:'和平广场',show_tit:false,data:[{value:335, name:'发展成功'},{value:310, name:'发展失败'},{value:234, name:'未分配'},{value:135, name:'继续跟进'}]},
-                {id_num:'3',id:'和平广场',show_tit:false,data:[{value:335, name:'发展成功'},{value:310, name:'发展失败'},{value:234, name:'未分配'},{value:135, name:'继续跟进'}]}
-           ])
-        this.worker_time_init([{'name':'巴西','value':50},{'name':'印尼','value':20},{'name':'美国','value':300},{'name':'印度','value':200},{'name':'中国','value':100}]);
-        this.worker_person_init([{'name':'巴西','value':500,'success':200,'fail':100,'doing':200},{'name':'印尼','value':120,'success':50,'fail':20,'doing':50},{'name':'美国','value':300,'success':80,'fail':100,'doing':120},{'name':'印度','value':200,'success':20,'fail':110,'doing':70},{'name':'中国','value':100,'success':20,'fail':20,'doing':60}]);
+        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/getIndexData'
+        ).then( res=>{
+        if(res.data.code==200){
+                this.time.remin=res.data.info.companySituationDto.remainingCallTime;
+                this.worker.num=res.data.info.companySituationDto.activeSeatNum;
+                this.worker.all=res.data.info.companySituationDto.seatNum;
+            }
+        });
+        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryIndexCallTaskList'
+        ).then( res=>{
+            if(res.data.code==200){
+                this.mission_init(res.data.info)
+            }
+        });
+        this.init(1);
     },
     computed:{
         time_scale:function(){
@@ -144,32 +154,6 @@ export default {
         },
         worker_scale:function(){
             return (this.worker.num/this.worker.all)*100
-        },
-        worker_time:{
-            get: function () {
-                return this.worker_time_data;
-            },
-            set: function (newValue) {
-                this.drawLine(newValue);
-            }
-        },
-        worker_person:{
-            get: function () {
-                return this.worker_person_data;
-            },
-            set: function (newValue) {
-                this.drawLines(newValue);
-            }
-        },
-        mission:{
-            get: function () {
-                return this.mission_data;
-            },
-            set: function (newValue) {
-                for(var i=0;i<4;i++){
-                    this.drawPie(newValue[i]);
-                };
-            }
         }
     },
     methods:{
@@ -208,7 +192,7 @@ export default {
                             emphasis: {
                                 show: true,
                                 textStyle: {
-                                    fontSize: '15',
+                                    fontSize: '12',
                                     fontWeight: 'bold'
                                 },
                                 formatter: "{b}({d}%)"
@@ -228,8 +212,8 @@ export default {
         drawLine:function(item){
             var myChart = echarts.init(document.getElementsByClassName('svg_work')[0]);
             var compare = function (obj1, obj2) {
-                var val1 = obj1.value;
-                var val2 = obj2.value;
+                var val1 = obj1.talkedDuration;
+                var val2 = obj2.talkedDuration;
                 if (val1 < val2) {
                     return -1;
                 } else if (val1 > val2) {
@@ -242,8 +226,8 @@ export default {
             var arr_person=[];
             var arr_time=[];
             for(let i=0;i<item.length;i++){
-                arr_person.push(item[i].name)
-                arr_time.push(item[i].value)
+                arr_person.push(item[i].shortName)
+                arr_time.push(item[i].talkedDuration)
             }
             var option = {
                 title: {
@@ -294,8 +278,8 @@ export default {
         drawLines:function(item){
             var myChart = echarts.init(document.getElementsByClassName('svg_work')[1]);
             var compare = function (obj1, obj2) {
-                var val1 = obj1.value;
-                var val2 = obj2.value;
+                var val1 = obj1.failureNum+obj1.progressingNum+obj1.shortName;
+                var val2 = obj2.failureNum+obj2.progressingNum+obj2.shortName;
                 if (val1 < val2) {
                     return -1;
                 } else if (val1 > val2) {
@@ -310,10 +294,10 @@ export default {
             var arr_fail=[];
             var arr_doing=[];
             for(let i=0;i<item.length;i++){
-                arr_person.push(item[i].name)
-                arr_success.push(item[i].success)
-                arr_fail.push(item[i].fail)
-                arr_doing.push(item[i].doing)
+                arr_person.push(item[i].shortName)
+                arr_success.push(item[i].successNum)
+                arr_fail.push(item[i].failureNum)
+                arr_doing.push(item[i].progressingNum)
             }
             var option = {
                 title: {
@@ -410,19 +394,52 @@ export default {
             myChart.setOption(option);
         },
         change:function(){
-            
+            this.init(this.time_past);
         },
-        worker_time_init:function(value){
-            this.worker_time=value;
-            this.worker_time_data=value;
+        worker_time_init:function(item){
+            this.drawLine(item)
         },
         worker_person_init:function(value){
-            this.worker_person=value;
-            this.worker_person_data=value;
+            this.drawLines(value)
         },
-        mission_init:function(value){
-            this.mission=value;
-            this.mission_data=value;
+        mission_init:function(item){
+            for(let i=0;i<4;i++){
+                if(i<item.length){
+                    let obj={'id_num':i,'id':item[i].taskName,'key':item[i].taskId,data:[{'name':'发展成功','value':item[i].successNum},{'name':'发展失败','value':item[i].failureNum},{'name':'继续跟进','value':item[i].processingNum},{'name':'未分配','value':item[i].unallocatedNum}]}
+                    this.drawPie(obj);
+                }else{
+                    let obj={'id_num':i};
+                    this.drawPie(obj);
+                }
+            }
+        },
+        date_init(date){
+            let year=date.getFullYear();
+            let month=(date.getMonth()+1)<10?("0"+(date.getMonth()+1)):(date.getMonth()+1);
+            let day=date.getDate()<10?("0"+date.getDate()):date.getDate();
+            return year+'-'+month+'-'+day;
+        },
+        init(num_pass){
+            if(num_pass==2){
+                var beginTime=this.date_init(new Date(new Date().getTime() - 2*24*60*60*1000));
+                var endTime=this.date_init(new Date(new Date().getTime() - 1*24*60*60*1000));
+            }else{
+                var beginTime=this.date_init(new Date(new Date().getTime() - num_pass*24*60*60*1000));
+                var endTime=this.date_init(new Date());
+            }
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/callstatistics/querySeatsTalkedDurationChart',{'pageSize':10,beginTime:beginTime,endTime:endTime,'requireTotalCount':true}
+            ).then( res=>{
+                if(res.data.code==200){
+                    this.worker_time_init(res.data.rows);
+                }
+            });
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/callstatistics/querySeatsCalledNumTotalChart',{'pageSize':10,beginTime:beginTime,endTime:endTime,'requireTotalCount':true}
+            ).then( res=>{
+                if(res.data.code==200){
+                    console.log(res);
+                    this.worker_person_init(res.data.rows);
+                }
+            });
         }
     }
 }

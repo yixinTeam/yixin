@@ -1,7 +1,8 @@
 <template>
     <div class="container">
-        <div class="head">历史通话记录<i class="el-icon-close"></i></div>
-        <div class="body">
+        <div class="head">历史通话记录<i class="el-icon-close" @click="close"></i></div>
+        <div id="line" v-if="!head"></div>
+        <div class="body" v-if="head">
             <div class="mes2">
                 <p>{{name}}</p>
                 <p>{{phone}}</p>
@@ -14,29 +15,24 @@
                 <p>意向：{{think}}</p>
             </div>
         </div>
-        
         <div class="history">
             <div class="line"></div>
             <div class="record">
-                <div class="record_list black">
-                    <p class="grey">6月13日 12:23</p>
-                    {{record_list[0].worker}} <span class="black">呼叫</span> {{record_list[0].state}}
-                </div>
-                <div class="record_list black">
-                    <p class="grey">6月13日 12:23</p>
-                    {{record_list[1].worker}} <span class="black">通话</span> {{record_list[1].state}}
+                <div class="record_list black" v-for="(item,index) in details" :key="index">
+                    <p class="grey">{{item.callEndTime}}</p>
+                    {{item.shortName}} <span class="black">{{item.callReault==22?'呼叫':'通话'}}</span> {{item.callReault==22?item.callReaultString:item.callDuration}}
                     <div class="line_content">
-                        <p class="grey">客户状态&#12288;<span class="black">{{record_list[1].custom_state}}</span></p>
-                        <p class="grey" :style="{'float':'right'}">下次联系时间&#12288;<span class="black">{{record_list[1].next_time}}</span></p>
-                        <p class="grey">详情备注&#12288;<span class="black">{{record_list[1].note}}</span></p>
-                        <el-button type="info" size="mini">信息按钮</el-button>
-                        <el-button type="info" size="mini">信息按钮</el-button>
-                        <el-button type="info" size="mini">信息按钮</el-button>
-                        <p class="grey">通话录音&#12288;<audio controls>
-                        <source src="/statics/demosource/horse.ogg" type="audio/ogg">
-                        <source src="/statics/demosource/horse.mp3" type="audio/mpeg">
-                        您的浏览器不支持 audio 元素。
-                        </audio></p>
+                        <p class="grey" v-if="item.userResultStr">客户状态&#12288;<span class="black">{{item.userResultStr}}</span></p>
+                        <p class="grey" :style="{'float':'right'}">下次联系时间&#12288;<span class="black">{{item.nextContactTime?item.nextContactTime:'无'}}</span></p>
+                        <p class="grey" v-if="item.desc">详情备注&#12288;<span class="black">{{item.desc}}</span></p>
+                        <el-button type="info" size="mini" v-if="item.tags!=undefined" v-for="(_item,index) in taglist" :key="index">{{_item}}</el-button>
+                        <p class="grey" :style="{'width':'100%'}">通话录音&#12288;
+                            <audio controls>
+                            <source src="/statics/demosource/horse.ogg" type="audio/ogg">
+                            <source src="/statics/demosource/horse.mp3" type="audio/mpeg">
+                            您的浏览器不支持 audio 元素。
+                            </audio>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -44,22 +40,20 @@
     </div>
 </template>
 <style scoped>
-    .grey{
-        color: #999;
-        font-size: 12px;
-    }
-    .black{
-        color: #444;
-        font-size: 12px;
+    #line{
+        width: 100%;
+        height: 1px;
+        background-color: #e4e4e4;
     }
     div{
         
         font-size: 13px;
     }
     .container{
-        width: 36vw;
+        width: 30vw;
         overflow: hidden;
-        height: 80vh;
+        height: 100vh;
+        min-width: 400px;
     }
     .head{
         margin: 10px 0;
@@ -87,17 +81,19 @@
     }
     .history{
         position: relative;
-        height: 200px;
+        margin-top: 12px;
     }
     .line{
         width: 1px;
         background-color: #ccc;
-        height: 80vh;
+        height: 100vh;
         position: absolute;
         top: 0;
         left: 8px;
     }
     .record{
+        width: 30vw;
+        min-width: 400px;
         position: absolute;
         top: 0;
         left: 0;
@@ -106,7 +102,7 @@
         margin: 4px 0;
         background: transparent;
         overflow-y: auto;
-        max-height: 50vh;
+        max-height: 90vh;
     }
     .record p{
         margin: 4px 0;
@@ -170,17 +166,24 @@ export default {
             job:'设计师',
             company:'网易(杭州)网络有限公司',
             email:'hzfuwenjuan@corp.nete',
-            think:'待添加',
-            record_list:[{
-                worker:'陈晓花',
-                state:'无人接听'
-            },{
-                worker:'陈晓花',
-                state:'23分23秒',
-                custom_state:'继续跟进',
-                next_time:'6月14日 12:00',
-                note:'意向不是特别明显意向不是特别明显意向不是特别明显意向不是特别明显意向不是特别明显意向不是特别明显意向不是特别明显'
-            }]
+            think:'待添加'
+        }
+    },
+    props:['head','details'],
+    computed:{
+        taglist:function(){
+            var arr=[];
+            this.details.map(function(item){
+                if(item.tags!=undefined){
+                    //arr.push(item.tags.lastTagValue.split(';'));
+                }
+            });
+            return arr;
+        }
+    },
+    methods:{
+        close(){
+            this.$emit('close')
         }
     }
 }

@@ -1,24 +1,30 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import manager from '@/components/manager'
-import manager_index from '@/components/manager_index'
-import mission_follow from '@/components/mission_follow'
-import mission_detail from '@/components/mission_detail'
-import worker from '@/components/worker'
-import call_count from '@/components/call_count'
-import call_detail from '@/components/call_detail'
-import label from '@/components/label'
-import Staff from '@/components/Staff'
-import Staff_index from '@/components/Staff_index'
-import Staff_stage from '@/components/Staff_stage'
-import Staff_call_count from '@/components/Staff_call_count'
+import login from '@/components/login'
+import manager from '@/components/page_manager/manager'
+import manager_index from '@/components/page_manager/manager_index'
+import mission_follow from '@/components/page_manager/manager_mission_follow'
+import mission_detail from '@/components/page_manager/manager_mission_detail'
+import worker from '@/components/page_manager/manager_worker'
+import call_count from '@/components/page_manager/manager_call_count'
+import call_detail from '@/components/page_manager/manager_call_detail'
+import label from '@/components/page_manager/manager_label'
+import staff from '@/components/page_staff/staff'
+import staff_index from '@/components/page_staff/staff_index'
+import staff_stage from '@/components/page_staff/staff_stage'
+import staff_follow from '@/components/page_staff/staff_mission_follow'
+import staff_detail from '@/components/page_staff/staff_mission_detail'
+import staff_call_count from '@/components/page_staff/staff_call_count'
 import test from '@/components/test'
 Vue.use(Router)
 
 export default new Router({
   routes: [{
     path: '/',
-    redirect: '/manager'
+    redirect: '/manager/index'
+  },{
+    path: '/login',
+    component: login
   }, {
     path: '/manager',
     component: manager,
@@ -32,12 +38,14 @@ export default new Router({
       {path:'label',component:label},
     ]
   }, {
-    path: '/Staff',
-    component: Staff,
+    path: '/staff',
+    component: staff,
     children:[
-      {path:'index',component:Staff_index},
-      {path:'stage',component:Staff_stage},
-      {path:'call_count',component:Staff_call_count}
+      {path:'index',component:staff_index},
+      {path:'stage',component:staff_stage},
+      {path:'follow',component:staff_follow},
+      {path:'detail',component:staff_detail},
+      {path:'call_count',component:staff_call_count}
     ]
   }, {
     path: '/test',

@@ -4,15 +4,15 @@
             <p>今日剩余任务</p>
             <ul>
                 <li>
-                    <p class="black">4</p>
+                    <p class="black">{{datas.seatTaskLeftTodayDto.taskNum}}</p>
                     <p class="grey">外呼任务</p>
                 </li>
                 <li>
-                    <p class="black">233</p>
+                    <p class="black">{{datas.seatTaskLeftTodayDto.toCallUserNum}}</p>
                     <p class="grey">待呼叫人数</p>
                 </li>
                 <li>
-                    <p class="black">8</p>
+                    <p class="black">{{datas.seatTaskLeftTodayDto.subscribeTodayNum}}</p>
                     <p class="grey">今日已预约</p>
                 </li>
             </ul>
@@ -21,27 +21,27 @@
             <p>今日完成情况</p>
             <ul>
                 <li>
-                    <p class="black">88</p>
+                    <p class="black">{{datas.todayCompleteDto.callNumTotal}}</p>
                     <p class="grey">已呼人数</p>
                 </li>
                 <li>
-                    <p class="black">240</p>
+                    <p class="black">{{datas.todayCompleteDto.callDurationTotal}}</p>
                     <p class="grey">已呼时长(min)</p>
                 </li>
                 <li>
-                    <p class="black">8</p>
+                    <p class="black">{{datas.todayCompleteDto.successNum}}</p>
                     <p class="grey">发展成功</p>
                 </li>
                 <li>
-                    <p class="black">60</p>
+                    <p class="black">{{datas.todayCompleteDto.failureNum}}</p>
                     <p class="grey">发展失败</p>
                 </li>
                 <li>
-                    <p class="black">20</p>
+                    <p class="black">{{datas.todayCompleteDto.processingNum}}</p>
                     <p class="grey">继续跟进</p>
                 </li>
                 <li>
-                    <p class="black">9.01%</p>
+                    <p class="black">{{datas.todayCompleteDto.callNumTotal==0?0:(datas.todayCompleteDto.successNum/data.todayCompleteDto.callNumTotal*100)}}%</p>
                     <p class="grey">成功率(成功/已呼)</p>
                 </li>
             </ul>
@@ -134,41 +134,36 @@
 
 <script>
 let echarts = require('echarts/lib/echarts');
-  // 引入饼图组件
-  require('echarts/lib/chart/pie')
-  // 引入提示框和图例组件
-  require('echarts/lib/component/tooltip')
-  require('echarts/lib/component/legend')
-  require('echarts/lib/component/title')
+// 引入饼图组件
+require('echarts/lib/chart/pie')
+// 引入提示框和图例组件
+require('echarts/lib/component/tooltip')
+require('echarts/lib/component/legend')
+require('echarts/lib/component/title')
 export default {
     name:'Staff_index',
     data:function(){
         return {
-            mission_data:[]
-        }
-    },
-    mounted() {
-        this.mission_init([
-            {id_num:'0',id:'武林业主',show_tit:false,data:[{value:335, name:'发展成功'},{value:310, name:'发展失败'},{value:135, name:'继续跟进'}]},
-            {id_num:'1',id:'和平广场',show_tit:false,data:[{value:335, name:'发展成功'},{value:310, name:'发展失败'},{value:135, name:'继续跟进'}]},
-            {id_num:'2',id:'和平广场',show_tit:false,data:[{value:335, name:'发展成功'},{value:310, name:'发展失败'},{value:135, name:'继续跟进'}]},
-            {id_num:'3',id:'和平广场',show_tit:false,data:[{value:335, name:'发展成功'},{value:310, name:'发展失败'},{value:135, name:'继续跟进'}]}
-        ])
-    },
-    computed:{
-        mission:{
-            get: function () {
-                return this.mission_data;
-            },
-            set: function (newValue) {
-                for(var i=0;i<4;i++){
-                    this.drawPie(newValue[i]);
-                };
+            mission_data:[],
+            datas:{
+                "seatTaskLeftTodayDto" : {
+                "subscribeTodayNum" : 0,
+                "taskNum" : 0,
+                "toCallUserNum" : 0
+                },
+                "todayCompleteDto" : {
+                "callDurationTotal" : 0,
+                "callNumTotal" : 0,
+                "failureNum" : 0,
+                "processingNum" : 0,
+                "successNum" : 0
+                }
             }
         }
     },
     methods:{
         drawPie:function(item){
+            console.log(item);
             var myChart = echarts.init(document.getElementsByClassName('svg')[item.id_num]);
             var option = {
                 tooltip: {
@@ -223,10 +218,40 @@ export default {
         change:function(){
             
         },
-        mission_init:function(value){
-            this.mission=value;
-            this.mission_data=value;
+        mission_init:function(item){
+            for(let i=0;i<4;i++){
+                if(i<item.length){
+                    let obj={'id_num':i,'id':item[i].taskName,'key':item[i].taskId,data:[{'name':'发展成功','value':item[i].successNum},{'name':'发展失败','value':item[i].failureNum},{'name':'继续跟进','value':item[i].processingNum}]}
+                    this.drawPie(obj);
+                }
+            }
         }
+    },
+    //初始化首页数据
+    mounted(){
+        var data = {
+			name: 'qy1003',
+			password: 'qy1003',
+			password2: '123456',
+        };
+        var _this=this;
+        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate', data).then(res=>{
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/getIndexData'
+            ).then( res=>{
+            if(res.data.code==200){
+
+                    _this.datas=res.data.info;
+                    console.log(res.data.info)
+                }
+            });
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryTaskOnwallChartBySeat'
+            ).then( res=>{
+                if(res.data.code==200){
+                    _this.mission_init(res.data.info);
+                }
+            });
+        })
+        
     }
 }
 </script>

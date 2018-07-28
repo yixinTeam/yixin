@@ -24,16 +24,10 @@
                 </el-input>
                 <el-button type="info" class="button" :style="{float:'left'}" @click="missoin_search">搜索</el-button>
                 <el-button type="info" plain class="button">导出当前结果</el-button>
-                <el-button type="info"  class="button" @click="lead_in">导入客户</el-button>
-                <Dialog v-bind:leading="leading" @reset="reset"></Dialog>
             </div>
             <div class="zhankai" v-if="search_state==false">
                 <el-button type="info" plain class="button" @click="search_change(true)">收起</el-button>
-                <div>
-                    <p class="grey">可见状态</p>
-                    <p class="black" :class="{see_active:see_state=='1'}" @click="see_change('1')">所有人可见</p>
-                    <p class="black" :class="{see_active:see_state=='0'}" @click="see_change('0')">仅管理员可见</p>
-                </div>
+               
                 <div>
                     <p class="grey">创建时间</p>
                     <el-date-picker v-model="search_date" type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" size="mini"  prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
@@ -44,56 +38,32 @@
                 <el-button type="info" plain class="button" @click="search_change(false)">展开</el-button>
                 <div>
                     <p class="grey">筛选条件</p>
-                    <el-tag type="info" class="tag">{{see_state=='0'?'所有人可见':'仅管理员可见'}}</el-tag>
-                
-                    <el-tag type="info" class="tag" v-if="search_date.length>0">{{'创建时间： '+search_date[0]+'~'+search_date[1]}}</el-tag>
+                    <el-tag type="info" class="tag" v-if="search_date!=null&&search_date.length>0">{{'创建时间： '+search_date[0]+'~'+search_date[1]}}</el-tag>
                 </div>
             </div>
-            <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table">
+            <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table" @sort-change="sort_change">
                 <el-table-column label="任务名称" class-name="line1" label-class-name="line1_tit" sortable :show-overflow-tooltip=true min-width="120">
                     <template slot-scope="scope">
-                        <router-link :to="{path:'./detail', query: { id: '111' }}">
+                        <router-link :to="{path:'./detail', query: { id: scope.row.taskId }}">
                             {{scope.row.name}}
                         </router-link>
                     </template>
                 </el-table-column>
-                <el-table-column prop="numberTotal" label="总客户" class-name="line2" sortable  :show-overflow-tooltip=true> </el-table-column>
-                <el-table-column label="已分配" class-name="line3" sortable :show-overflow-tooltip=true >
+                <el-table-column prop="allocatedNum" label="总客户" class-name="line2" sortable='custom'  :show-overflow-tooltip=true> </el-table-column>
+                <el-table-column prop="calledNum" label="已呼" class-name="line4" sortable='custom' :show-overflow-tooltip=true> </el-table-column>
+                <el-table-column prop="successNum" label="成功" class-name="line5" sortable='custom' :show-overflow-tooltip=true> </el-table-column>
+                <el-table-column prop="failureNum" label="失败" class-name="line6" sortable='custom' :show-overflow-tooltip=true> </el-table-column>
+                <el-table-column prop="processingNum" label="跟进" class-name="line7" sortable='custom' :show-overflow-tooltip=true> </el-table-column>
+                <el-table-column prop="tags" label="关联客户标签" class-name="line8" :show-overflow-tooltip=true min-width="150">
                     <template slot-scope="scope">
-                        {{scope.row.numberTotal-scope.row.unallocatedNum}}
+                        <span v-for="(item,index) in scope.row.tagValue" :key="index">{{item}};</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="calledNum" label="已呼" class-name="line4" sortable :show-overflow-tooltip=true> </el-table-column>
-                <el-table-column prop="successNum" label="成功" class-name="line5" sortable :show-overflow-tooltip=true> </el-table-column>
-                <el-table-column prop="failureNum" label="失败" class-name="line6" sortable :show-overflow-tooltip=true> </el-table-column>
-                <el-table-column prop="processingNum" label="跟进" class-name="line7" sortable :show-overflow-tooltip=true> </el-table-column>
-                <el-table-column prop="tags" label="关联客户标签" class-name="line8" sortable :show-overflow-tooltip=true min-width="150">
-                    <template slot-scope="scope">
-                        <span v-for="item in scope.row.tags" :key="item">{{item}};</span>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="create" label="创建时间" class-name="line9" sortable :show-overflow-tooltip=true min-width="120"> </el-table-column>
-                <el-table-column prop="visibleState" label="可见状态" class-name="line10" :show-overflow-tooltip=true min-width="100">
-                    <template slot-scope="scope">
-                        {{scope.row.visibleState==0?'仅管理员可见':'所有人可见'}}
-                    </template>
-                </el-table-column>
-                <el-table-column prop="p_caozuo" class-name="line11" label="操作"  min-width="160">
-                    <template slot-scope="scope">
-                        <el-button
-                        size="mini" type="text"
-                        @click="handlefp(scope.$index, scope.row)">分配客户</el-button>&#12288;|
-                        <el-button
-                        size="mini"
-                        type="text"
-                        @click="handlefr(scope.$index, scope.row)">导入客户</el-button>
-                    </template>
-                </el-table-column>
+                <el-table-column prop="create" label="创建时间" class-name="line9" sortable='custom' :show-overflow-tooltip=true min-width="120"> </el-table-column>
             </el-table>
             <el-pagination layout="prev, pager, next" :page-size="10" :total="page_count" @current-change='page_change'>
             </el-pagination>
         </div>
-        <assign v-bind:assign="assign" :total='p_assign' @reset="reset"></assign>
     </div>
 </template>
 <style scoped>
@@ -180,25 +150,6 @@
         font-size: 12px;
         margin: 0 14px;
     }
-    .zhankai{
-        background-color: rgba(242, 242, 242, 1);
-        text-align: left;
-        overflow: hidden;
-    }
-    .zhankai>div{
-        overflow: hidden;
-        margin: 10px 0;
-    }
-    .zhankai>div>p{
-        float: left;
-        padding: 4px 2px;
-    }
-    .zhankai>div>p.grey{
-        margin: 0 14px;
-    }
-    .zhankai>div>p.black{
-        margin: 0 10px;
-    }
     .see_active{
         background-color: rgba(153, 153, 153, 1);
         color: #fff;
@@ -213,12 +164,6 @@
     }
     .date_picker{
         position: relative;
-    }
-    .zhankai .button{
-        float: right;
-        padding: 6px 14px;
-        font-size: 12px;
-        margin-top: 10px;
     }
     .table{
         font-size: 14px;
@@ -235,10 +180,8 @@ let echarts = require('echarts/lib/echarts')
   require('echarts/lib/component/tooltip')
   require('echarts/lib/component/legend')
   require('echarts/lib/component/title')
-  import Dialog from "./component/dialog.vue"
-  import assign from "./component/dialog_assign.vue"
 export default {
-    name:'missoin_follow',
+    name:'staff_follow',
     data:function(){
         return {
             missoin_data:[],
@@ -246,29 +189,15 @@ export default {
             checkedlist:[],
             search:'',
             search_state:false,
-            see_state:'1',
             search_date:[],
-            leading:false,
-            assign:false,
-            p_assign:'',
             tableData: [],
-            page_count:1
+            page_count:1,
+            pageNum:1,
+            orderWay:null,
+            orderField:null
         }
     },
-    components:{
-      Dialog,assign
-    },
-    computed:{
-        //饼图数据
-        missoin:{
-            get: function () {
-                return this.missoin_data;
-            },
-            set: function (newValue) {
-                this.drawPie(newValue);
-            }
-        },
-    },
+
     methods:{
         //画饼图
         drawPie:function(item){
@@ -306,7 +235,7 @@ export default {
                             emphasis: {
                                 show: true,
                                 textStyle: {
-                                    fontSize: '15',
+                                    fontSize: 12,
                                     fontWeight: 'bold'
                                 },
                                 formatter: "{b}({d}%)"
@@ -336,25 +265,8 @@ export default {
                 
             }
         },
-        see_change:function(value){
-            this.see_state=value;
-        },
         search_change:function(value){
             this.search_state=value;
-        },
-        //打开导入客户弹窗
-        lead_in:function(){
-            this.leading = true;
-            this.assign=false;
-        },
-        //打开分配客户弹窗
-        handlefp:function(index,row){
-            this.assign=true;
-            this.leading=false;
-            this.p_assign=row.unallocatedNum;
-        },
-        handledr:function(index,row){
-            console.log(index,row)
         },
         //关闭弹窗
         reset:function(){
@@ -363,28 +275,59 @@ export default {
         },
         show_mission(){
             //选择展示任务
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryIndexCallTaskList',
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryTaskOnwallChartBySeat',
                 this.checkedlist
             ).then((res)=>{
                 this.missoin_init(res.data.info);
             })
         },
+        //排序搜索
+        sort_change({column, prop, order} ){
+            this.orderWay=order.split('ending')[0];
+            this.orderField=prop;
+            var data={startTime:this.search_date!=null?this.search_date[0]:'',endTime:this.search_date!=null?this.search_date[1]:'',nameLike:this.search,requireTotalCount:true,pageNum:val,"orderWay":this.orderWay,'orderField':this.orderField};
+            for (let key in data){
+                if(data[key]==''){
+                    delete data[key];
+                }
+            }
+            this.seat_init(data);
+        },
         //页码改变
         page_change(val){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryCallTaskList',{pageNum:val})
-            .then( (res) => {
-                if(res.data.code==200){
-                    this.tableData=res.data.rows;
+            this.pageNum=val;
+            var data={startTime:this.search_date!=null?this.search_date[0]:'',endTime:this.search_date!=null?this.search_date[1]:'',nameLike:this.search,requireTotalCount:true,pageNum:val,"orderWay":this.orderWay,'orderField':this.orderField};
+            for (let key in data){
+                if(data[key]==''){
+                    delete data[key];
                 }
-            })
+            }
+            this.seat_init(data);
         },
         //条件搜索
         missoin_search:function(){
-            console.log(this.search)
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryCallTaskList',{startTime:this.search_date!=null?this.search_date[0]:'',endTime:this.search_date!=null?this.search_date[1]:'',nameLike:this.search,visibleState:this.see_state})
+            this.search_state=true;
+            var data={startTime:this.search_date!=null?this.search_date[0]:'',endTime:this.search_date!=null?this.search_date[1]:'',nameLike:this.search,requireTotalCount:true};
+            for (let key in data){
+                if(data[key]==''){
+                    delete data[key];
+                }
+            }
+            this.seat_init(data);
+        },
+        //下方任务列表
+        seat_init(data){
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatCallTask/findSeatCallTaskList',data)
             .then( (res) => {
-                console.log(res);
                 if(res.data.code==200){
+                    if(res.data.totalCount){
+                        this.page_count=res.data.totalCount;
+                    }
+                    res.data.rows.map(item=>{
+                        if(item.tags.length>0&&item.tags[0].tagValue.length>0){
+                            item.tagValue=item.tags[0].tagValue.split(';')
+                        }
+                    });
                     this.tableData=res.data.rows;
                 }
             })
@@ -392,32 +335,27 @@ export default {
     },
     mounted:function(){
         var data={
-            'name':'wshqy','password':'123456','password2':'123456'
+            'name':'qy1003','password':'qy1003','password2':'123456'
         };
         this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
             data
-        );
-        //左侧饼图数据
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryIndexCallTaskList')
-        .then( (res) => {
-            if(res.data.code==200){
-                this.missoin_init(res.data.info);
-            }
-        });
-        //右侧任务多选列表
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryRightCallTaskList')
-        .then( (res) => {
-            if(res.data.code==200){
-                this.position=res.data.rows;
-            }
-        });
-        //下方任务列表
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryCallTaskList',{requireTotalCount:true})
-        .then( (res) => {
-            if(res.data.code==200){
-                this.page_count=res.data.totalCount;
-                this.tableData=res.data.rows;
-            }
+        ).then(res=>{
+            //左侧饼图数据
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryTaskOnwallChartBySeat')
+            .then( (res) => {
+                if(res.data.code==200){
+                    this.missoin_init(res.data.info);
+                }
+            });
+            //右侧任务多选列表
+            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryTaskIntroOnWallBySeat',{"pageNum" : 1,"pageSize" : 10})
+            .then( (res) => {
+                if(res.data.code==200){
+                    this.position=res.data.rows;
+                }
+            });
+            //下方任务列表
+            this.seat_init({requireTotalCount:true,'pageNum':1});
         })
     }
 }
