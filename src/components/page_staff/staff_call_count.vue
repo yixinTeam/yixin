@@ -43,7 +43,7 @@
                     <p class="grey">总呼叫时长(min)</p>
                 </li>
                 <li>
-                    <p class="black">{{infos.calledDuration?info.calledDuration/infos.callTalkedTotal:0}}</p>
+                    <p class="black">{{infos.calledDuration?infos.calledDuration/infos.callTalkedTotal:0}}</p>
                     <p class="grey">平均呼叫时长(s)</p>
                 </li>
             </ul>
@@ -244,16 +244,9 @@ export default {
         }
     },
     mounted() {
-        var data = {
-			name: 'wshqy1001',
-			password: '123456',
-			password2: '123456',
-		};
-		this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate', data).then(res=>{
-            this.leading_record=[this.date_init(new Date(new Date().getTime() - 24*60*60*1000)),this.date_init(new Date())];
-            this.init(this.date_init(new Date(new Date().getTime() - 24*60*60*1000)),this.date_init(new Date()));
-            this.task_init();
-        });
+        this.leading_record=[this.date_init(new Date(new Date().getTime() - 24*60*60*1000)),this.date_init(new Date())];
+        this.init(this.date_init(new Date(new Date().getTime() - 24*60*60*1000)),this.date_init(new Date()));
+        this.task_init();
     },
     methods:{
         time_change:function(){
@@ -276,7 +269,8 @@ export default {
                 this.mission_active.splice(index,1);
             }else if(value==0){
                 this.mission_active=[0];
-            }
+            };
+            this.search();
         },
         custom_change:function(value){
             let _this=this;
@@ -293,7 +287,8 @@ export default {
                 this.custom_active.splice(index,1);
             }else if(value==0){
                 this.custom_active=[0];
-            }
+            };
+            this.search();
         },
         call_change:function(value){
             let _this=this;
@@ -310,7 +305,8 @@ export default {
                 this.call_active.splice(index,1);
             }else if(value==0){
                 this.call_active=[0];
-            }
+            };
+            this.search();
         },
         search_change:function(value){
             this.search_state=value;
@@ -323,10 +319,9 @@ export default {
         },
         task_init(){
             //任务列表
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryTaskIntroOnWallBySeat',{"pageNum" : 1,'pageSize':100})
+            this.$ajax.post(this.$preix+'/new/calltask/queryTaskIntroOnWallBySeat',{"pageNum" : 1,'pageSize':100})
             .then( (res) => {
                 if(res.data.code==200){
-                    console.log(res.data.rows)
                     res.data.rows.splice(0,0,{'taskName':'全部','taskId':''});
                     res.data.rows.map((value, index)=>value.key=index);
                     this.mission_list=res.data.rows;
@@ -335,7 +330,7 @@ export default {
         },
         init(beginTime,endTime,data){
             //上方完成情况
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/callstatistics/querySeatTaskCompletion',{beginDay:beginTime,endDay:endTime,"requireTotalCount" : true}
+            this.$ajax.post(this.$preix+'/new/callstatistics/querySeatTaskCompletion',{beginTime:beginTime,endTime:endTime}
             ).then( res=>{
                 if(res.data.code==200&&res.data.info){
                     this.infos=res.data.info;
@@ -347,7 +342,6 @@ export default {
         },
         //条件搜索
         search(){
-            this.search_state=true;
             if(this.time_past==2&&this.leading_date!=null){
                 var beginTime=this.leading_date[0];
                 var endTime=this.leading_date[1];
@@ -364,7 +358,6 @@ export default {
                     delete data[key];
                 }
             }
-            console.log(data);
             this.init(beginTime,endTime,data);
         },
         //页码改变
@@ -423,10 +416,9 @@ export default {
         },
         //表格信息查询
         mission_init(data){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/callstatistics/findCallStatisticsDetailList',data)
+            this.$ajax.post(this.$preix+'/new/callstatistics/findCallStatisticsDetailList',data)
             .then( (res) => {
                 if(res.data.code==200){
-                    console.log(res);
                     this.page_count=res.data.totalCount;
                     this.tableData=res.data.rows;
                 }

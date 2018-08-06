@@ -25,7 +25,7 @@
                         <p class="grey" v-if="item.userResultStr">客户状态&#12288;<span class="black">{{item.userResultStr}}</span></p>
                         <p class="grey" :style="{'float':'right'}">下次联系时间&#12288;<span class="black">{{item.nextContactTime?item.nextContactTime:'无'}}</span></p>
                         <p class="grey" v-if="item.desc">详情备注&#12288;<span class="black">{{item.desc}}</span></p>
-                        <el-button type="info" size="mini" v-if="item.tags!=undefined" v-for="(_item,index) in taglist" :key="index">{{_item}}</el-button>
+                        <el-button type="info" size="mini" v-for="(_item,index) in taglist" :key="index">{{_item}}</el-button>
                         <p class="grey" :style="{'width':'100%'}">通话录音&#12288;
                             <audio controls>
                             <source src="/statics/demosource/horse.ogg" type="audio/ogg">
@@ -50,7 +50,7 @@
         font-size: 13px;
     }
     .container{
-        width: 30vw;
+        width: 400px;
         overflow: hidden;
         height: 100vh;
         min-width: 400px;
@@ -92,7 +92,7 @@
         left: 8px;
     }
     .record{
-        width: 30vw;
+        width: 400px;
         min-width: 400px;
         position: absolute;
         top: 0;
@@ -170,17 +170,6 @@ export default {
         }
     },
     props:['head','details'],
-    computed:{
-        taglist:function(){
-            var arr=[];
-            this.details.map(function(item){
-                if(item.tags!=undefined){
-                    //arr.push(item.tags.lastTagValue.split(';'));
-                }
-            });
-            return arr;
-        }
-    },
     methods:{
         close(){
             this.$emit('close')

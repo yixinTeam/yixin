@@ -52,6 +52,11 @@
                             {{scope.row.loginName}}
                         </router-link>
                     </template> -->
+                    <template slot-scope="scope">
+                        <p :style="{'color':'#3399ff'}" @click="handleDetail">
+                            {{scope.row.loginName}}
+                        </p>
+                    </template> 
                 </el-table-column>
                 <el-table-column prop="shortName" label="坐席昵称" class-name="line2" sortable='custom' :show-overflow-tooltip=true min-width="100">
                     <template slot-scope="scope">
@@ -97,10 +102,76 @@
             <el-pagination layout="prev, pager, next" :page-size="10" :total="page_count" @current-change='page_change'>
             </el-pagination>
             <Dialog :message='message' :type='dialog_type' :show="dialog_show" :checkall="checkbox" @close='close'></Dialog>
+            <el-dialog title="详情" :visible.sync="see" center>
+                <div class="con">
+                    <el-form :model="Form" :rules="rules" ref="Form" label-width="120px" class="demo-ruleForm" size="mini">
+                        <el-form-item label="账号" prop="loginName">
+                            <el-input v-model="Form.loginName"></el-input>
+                        </el-form-item>
+                        <el-form-item label="昵称" prop="shortName">
+                            <el-input v-model="Form.shortName"></el-input>
+                        </el-form-item>
+                        <el-form-item label="账号状态" prop="state">
+                            <el-select v-model="Form.state" placeholder="请选择账号状态">
+                                <el-option label="激活" value="1"></el-option>
+                                <el-option label="冻结" value="2"></el-option>
+                                <el-option label="停用" value="3"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <ul>
+                            <li>
+                                <p class="black">实时资源：</p>
+                                <div class="grey charge">2000分钟</div>
+                            </li>
+                            <li>
+                                <p class="black">id：</p>
+                                <div class="grey">0edafda9-57d3-48e5-9cad-88041ca2a4a4</div>
+                            </li>
+                            <li>
+                                <p class="black">创建日期：</p>
+                                <div class="grey">2018-03-23 11:53:05</div>
+                            </li>
+                            <li>
+                                <p class="black">更新日期：</p>
+                                <div class="grey">2018-06-29 13:54:34</div>
+                            </li>
+                            <li>
+                                <p class="black">手机：</p>
+                                <div class="grey">13325717959 </div>
+                            </li>
+                            <li>
+                                <p class="black">token：</p>
+                                <div class="grey">zwwqy</div>
+                            </li>
+                        </ul>
+                    </el-form>
+                </div>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="see=false">&#12288;取消&#12288;</el-button>
+                    <el-button type="info" @click="submitForm('Form')">&#12288;提交&#12288;</el-button>
+                </span>
+            </el-dialog>
         </div>
     </div>
 </template>
 <style scoped>
+    ul{
+        margin: 0;
+        padding-top: 18px;
+        border-top: 1px solid #e4e4e4;
+    }
+    li{
+        margin-bottom: 18px;
+    }
+    li>p{
+        width: 120px;
+        text-align: right;
+        float: left;
+        margin: 0;
+    }
+    li>div{
+        margin-left: 120px;
+    }
     .part1_tit{
         margin: 20px 0;
         overflow: hidden;
@@ -155,7 +226,7 @@
 import Dialog from "../component/dialog_worker.vue"
 import jsonfy from "../jsonfy.js"
 export default {
-    name:'worker',
+    name:'operation_staff',
     data:function(){
         return {
             worker_state:'',
@@ -171,14 +242,33 @@ export default {
             page_count:1,
             pageNum:1,
             orderWay:null,
-            orderField:null
+            orderField:null,
+            see:true,
+            Form: {
+                loginName: null,
+                shortName: null,
+                state: null
+            },
+            rules: {
+                loginName: [
+                    { required: true, message: '请输入账号', trigger: 'blur' }
+                ],
+                shortName: [
+                    { required: true, message: '请输入昵称', trigger: 'blur' }
+                ],
+                state: [
+                    { required: true, message: '请选择状态', trigger: 'blur' }
+                ]
+            }
         }
     },
     methods:{
+        handleDetail(){
+            this.see=true;
+        },
         worker_change:function(value){
             this.dialog_show=false;
             this.worker_state=value;
-            this.findSeat();
         },
         search_change:function(value){
             this.search_state=value;
@@ -289,13 +379,36 @@ export default {
         state_select(row,state){
             this.$ajax.post(this.$preix+'/new/account/updateSeat',{'id':row.id,'state':state})
             .then( (res) => {
-                if(res.code==200){
+                if(res.data.code==200){
                     this.reload()
                 }
             })
             .catch(res=>{
                 alert('修改失败哦')
             })
+        },
+        submitForm(formName){
+            console.log(this.$refs[formName]);
+            var _this=this;
+            var data=this.Form;
+            for(let key in data){
+                if(data[key]==null||data[key]==''){
+                    delete data[key]
+                }
+            }
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    this.$ajax.post(this.$preix+'/new/account/updateSeat',data)
+                    .then( (res) => {
+                        if(res.data.code==200){
+                            _this.reload()
+                        }
+                    })
+                } else {
+                    console.log('error submit!!');
+                    return false;
+                }
+            });
         }
     },
     components:{

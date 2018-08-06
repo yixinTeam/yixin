@@ -107,7 +107,7 @@ export default {
             this.$emit("reset");
         },
         copy:function(index){
-            let message=this.message[index].loginName+'\n'+this.message[index].shortName+'\n'+this.message[index].password2;
+            let message='坐席账号：'+this.message[index].loginName+'\n坐席昵称：'+this.message[index].shortName+'\n坐席密码：'+this.message[index].password2;
             let _index=index;
             let _this=this;
             this.$copyText(message).then(function (e) {
@@ -119,7 +119,7 @@ export default {
         copyall:function(){
             let message='';
             for(let i=0;i<this.message.length;i++){
-                message+=this.message[i].loginName+'\n'+this.message[i].shortName+'\n'+this.message[i].password2+'\n';
+                message+='坐席账号：'+this.message[i].loginName+'\n坐席昵称：'+this.message[i].shortName+'\n坐席密码：'+this.message[i].password2+'\n';
             }
             let _this=this;
             this.$copyText(message).then(function (e) {

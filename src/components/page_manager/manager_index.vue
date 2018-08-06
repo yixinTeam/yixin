@@ -5,9 +5,8 @@
             <ul>
                 <li>
                     <p class="grey">剩余通话资源</p>
-                    <p class="grey"><span class="black">{{time.remin}}分钟</span>/{{time.all}}分钟</p>
-                    <el-progress :percentage="time_scale" :show-text='false' :status='time_scale>20?"success":"exception"'></el-progress>
-                </li>
+                    <p class="grey"><span class="black">{{time.remin}}分钟</span></p>
+                    </li>
                 <li>
                     <p class="grey">企业坐席</p>
                     <p class="grey"><span class="black">{{worker.num}}人</span>/{{worker.all}}人</p>
@@ -132,7 +131,7 @@ export default {
         }
     },
     mounted() {
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/getIndexData'
+        this.$ajax.post(this.$preix+'/new/getIndexData'
         ).then( res=>{
         if(res.data.code==200){
                 this.time.remin=res.data.info.companySituationDto.remainingCallTime;
@@ -140,7 +139,7 @@ export default {
                 this.worker.all=res.data.info.companySituationDto.seatNum;
             }
         });
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryIndexCallTaskList'
+        this.$ajax.post(this.$preix+'/new/calltask/queryIndexCallTaskList'
         ).then( res=>{
             if(res.data.code==200){
                 this.mission_init(res.data.info)
@@ -188,14 +187,6 @@ export default {
                             normal: {
                                 show: false,
                                 position: 'center'
-                            },
-                            emphasis: {
-                                show: true,
-                                textStyle: {
-                                    fontSize: '12',
-                                    fontWeight: 'bold'
-                                },
-                                formatter: "{b}({d}%)"
                             }
                         },
                         labelLine: {
@@ -235,7 +226,7 @@ export default {
                     bottom:'0px',
                     left:'left',
                     textStyle:{
-                        fontSize:14,
+                        fontSize:12,
                         color:'#999',
                         fontWeight:'100'
                     }
@@ -243,7 +234,7 @@ export default {
                 grid: {
                     left: '3%',
                     right: '4%',
-                    bottom: '6%',
+                    bottom: '10%',
                     containLabel: true
                 },
                 xAxis: {
@@ -305,7 +296,7 @@ export default {
                     bottom:'0px',
                     left:'left',
                     textStyle:{
-                        fontSize:14,
+                        fontSize:12,
                         color:'#999',
                         fontWeight:'100'
                     }
@@ -317,7 +308,7 @@ export default {
                     itemWidth:15,
                     itenHeight:15,
                     pageTextStyle:{
-                        fontSize:14,
+                        fontSize:12,
                         color:'#999',
                         fontWeight:'100'
                     }
@@ -326,7 +317,7 @@ export default {
                 grid: {
                     left: '3%',
                     right: '4%',
-                    bottom: '6%',
+                    bottom: '10%',
                     containLabel: true
                 },
                 xAxis: {
@@ -427,13 +418,13 @@ export default {
                 var beginTime=this.date_init(new Date(new Date().getTime() - num_pass*24*60*60*1000));
                 var endTime=this.date_init(new Date());
             }
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/callstatistics/querySeatsTalkedDurationChart',{'pageSize':10,beginTime:beginTime,endTime:endTime,'requireTotalCount':true}
+            this.$ajax.post(this.$preix+'/new/callstatistics/querySeatsTalkedDurationChart',{'pageSize':10,beginTime:beginTime,endTime:endTime,'requireTotalCount':true}
             ).then( res=>{
                 if(res.data.code==200){
                     this.worker_time_init(res.data.rows);
                 }
             });
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/callstatistics/querySeatsCalledNumTotalChart',{'pageSize':10,beginTime:beginTime,endTime:endTime,'requireTotalCount':true}
+            this.$ajax.post(this.$preix+'/new/callstatistics/querySeatsCalledNumTotalChart',{'pageSize':10,beginTime:beginTime,endTime:endTime,'requireTotalCount':true}
             ).then( res=>{
                 if(res.data.code==200){
                     console.log(res);

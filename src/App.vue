@@ -1,11 +1,23 @@
 <template>
-  <div id="app">
+  <div id="app" :style="{'min-width':'1000px'}">
     <router-view/>
   </div>
 </template>
 <script>
 export default {
-  name: "App"
+  name: "App",
+  mounted(){
+    window.onload=function(){
+      var scale=document.body.scrollWidth/1200*64;
+      scale=(scale>64?64:scale);
+      document.documentElement.style.fontSize=scale+'px';
+    };
+    window.onresize=function(){
+      var scale=document.body.scrollWidth/1200*64;
+      scale=(scale>64?64:scale);
+      document.documentElement.style.fontSize=scale+'px';
+    };
+  }
 };
 </script>
 
@@ -16,7 +28,7 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  min-width: 1263px;
+  margin: 0 auto;
 }
 body{
   margin: 0;

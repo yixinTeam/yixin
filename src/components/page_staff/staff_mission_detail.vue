@@ -26,7 +26,7 @@
                 </div> -->
                 <div>
                     <p class="grey">导入时间</p>
-                    <el-date-picker v-model="leading_date" type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" size="mini" prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
+                    <el-date-picker v-model="leading_date" @change="date_change" type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" size="mini" prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </div>
                 <div>
@@ -266,13 +266,18 @@ export default {
         },
         custom_change:function(value){
             this.custom_state=value;
+            this.missoin_search();
+        },
+        date_change(){
+            this.missoin_search();
         },
         handlefp:function(){
 
         },
         //打开历史记录
         handlexx:function(index,row){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/queryResultHistoryEntity',{'taskId':row.taskId,'taskClientId':row.taskClientId}
+            console.log(row)
+            this.$ajax.post(this.$preix+'/new/seatWorkbench/queryResultHistoryEntity',{'taskID':this.$route.query.id,'taskClientId':row.taskClientId}
             ).then( res=>{
                 if(res.status==200){
                     this.show = true;
@@ -286,7 +291,7 @@ export default {
         },
         //查询任务信息
         mission_init(data){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatCallTask/findSeatCallTaskDetail',data)
+            this.$ajax.post(this.$preix+'/new/seatCallTask/findSeatCallTaskDetail',data)
             .then( (res) => {
                 if(res.data.code==200){
                     for(let i=0;i<res.data.rows.length;i++){
@@ -358,29 +363,22 @@ export default {
         },
         handleCommand(command) {
             this.tags[command.index]={'value':command.value};
+            this.missoin_search();
         }
     },
     //页面初始化数据
     mounted(){
-        var datas = {
-			name: 'qy1003',
-			password: 'qy1003',
-			password2: '123456',
-		};
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate', datas).then(res=>{
-            var data={'taskId':this.$route.query.id,"requireTotalCount" : true,"pageNum" : 1,"pageSize" : 10};
-            this.mission_init(data);
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/tag/findTagList')
-            .then( (res) => {
-                if(res.data.code==200){
-                    for(let i=0;i<res.data.info.length;i++){
-                        res.data.info[i].tags=res.data.info[i].tagValue.split(';');
-                    }
-                    this.data=res.data.info;
+        var data={'taskId':this.$route.query.id,"requireTotalCount" : true,"pageNum" : 1,"pageSize" : 10};
+        this.mission_init(data);
+        this.$ajax.post(this.$preix+'/new/tag/findTagList')
+        .then( (res) => {
+            if(res.data.code==200){
+                for(let i=0;i<res.data.info.length;i++){
+                    res.data.info[i].tags=res.data.info[i].tagValue.split(';');
                 }
-            });
-        })
-        
+                this.data=res.data.info;
+            }
+        });
     }
 }
 </script>

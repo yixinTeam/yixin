@@ -11,7 +11,9 @@
                 <div class="time">
                     <p class="grey">查询时间</p>
                     <el-date-picker
+                    @change="date_change"
                     v-model="leading_date"
+                    :picker-options="pickerOptions"
                     type="daterange"
                     range-separator="-"
                     start-placeholder="开始日期" :style="{'float':'left'}"
@@ -122,6 +124,7 @@
 </style>
 
 <script>
+import md5 from '../js/md5.js'
 export default {
     name:'call_count',
     data:function(){
@@ -135,18 +138,27 @@ export default {
             leading_record:[],
             pageNum:1,
             orderWay:null,
-            orderField:null
+            orderField:null,
+            pickerOptions:{
+                disabledDate:(time)=>{
+                    return time.getTime()>new Date().getTime()||time.getTime()<new Date(new Date().getTime() - 30*24*60*60*1000).getTime()
+                }
+            },
         }
     },
     methods:{
         search_change:function(value){
             this.search_state=value;
         },
-        custom_change:function(value){
-            this.custom_state=value;
-        },
-        worker_change:function(value){
-            this.worker_state=value;
+        date_change(){
+            this.leading_record=this.leading_date;
+            var data={'pageSize':10,beginDay:this.leading_date[0],endDay:this.leading_date[1],'requireTotalCount':true,'shortOrLoginName':this.search};
+            for (let key in data){
+                if(data[key]==''){
+                    delete data[key];
+                }
+            }
+            this.init(data);
         },
         handleNodeClick(data) {
             this.label_list[data.group]=data.id;
@@ -159,7 +171,7 @@ export default {
             return year+'-'+month+'-'+day;
         },
         init(data){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/callstatistics/findCallStatisticsList',data
+            this.$ajax.post(this.$preix+'/new/callstatistics/findCallStatisticsList',data
             ).then( res=>{
                 if(res.data.code==200){
                     this.tableData=res.data.rows;

@@ -15,33 +15,38 @@
                     <p class="black">{{datas.seatTaskLeftTodayDto.subscribeTodayNum}}</p>
                     <p class="grey">今日已预约</p>
                 </li>
+                <li :style="{'float':'right'}">
+                    <router-link :to="{path:'/staff/stage'}">
+                    <el-button type="info" size="small" :style="{'margin-top':'1em'}">开始呼叫工作</el-button>
+                    </router-link>
+                </li>
             </ul>
         </div>
         <div class="part2">
             <p>今日完成情况</p>
             <ul>
                 <li>
-                    <p class="black">{{datas.todayCompleteDto.callNumTotal}}</p>
+                    <p class="black">{{todayCompleteDto.calledNumTotal}}</p>
                     <p class="grey">已呼人数</p>
                 </li>
                 <li>
-                    <p class="black">{{datas.todayCompleteDto.callDurationTotal}}</p>
+                    <p class="black">{{todayCompleteDto.calledDuration}}</p>
                     <p class="grey">已呼时长(min)</p>
                 </li>
                 <li>
-                    <p class="black">{{datas.todayCompleteDto.successNum}}</p>
+                    <p class="black">{{todayCompleteDto.successNum}}</p>
                     <p class="grey">发展成功</p>
                 </li>
                 <li>
-                    <p class="black">{{datas.todayCompleteDto.failureNum}}</p>
+                    <p class="black">{{todayCompleteDto.failureNum}}</p>
                     <p class="grey">发展失败</p>
                 </li>
                 <li>
-                    <p class="black">{{datas.todayCompleteDto.processingNum}}</p>
+                    <p class="black">{{todayCompleteDto.progressingNum}}</p>
                     <p class="grey">继续跟进</p>
                 </li>
                 <li>
-                    <p class="black">{{datas.todayCompleteDto.callNumTotal==0?0:(datas.todayCompleteDto.successNum/data.todayCompleteDto.callNumTotal*100)}}%</p>
+                    <p class="black">{{todayCompleteDto.calledNumTotal==0?0:(todayCompleteDto.successNum/todayCompleteDto.callNumTotal*100)}}%</p>
                     <p class="grey">成功率(成功/已呼)</p>
                 </li>
             </ul>
@@ -49,7 +54,9 @@
         <div class="part3">
             <div class="p2_tit">
                 <p>进行中任务</p>
+                <router-link :to="{path:'/staff/follow'}">
                 <p class="grey">查看完整数据<i class="el-icon-d-arrow-right"></i></p>
+                </router-link>
             </div>
             <div class="svg"></div>
             <div class="svg"></div>
@@ -103,7 +110,7 @@
     .p2_tit>p:nth-child(1){
         float: left;
     }
-    .p2_tit>p:nth-child(2){
+    .p2_tit>a>p{
         float: right;
     }
     .p3_tit{
@@ -147,17 +154,20 @@ export default {
             mission_data:[],
             datas:{
                 "seatTaskLeftTodayDto" : {
-                "subscribeTodayNum" : 0,
-                "taskNum" : 0,
-                "toCallUserNum" : 0
-                },
-                "todayCompleteDto" : {
-                "callDurationTotal" : 0,
-                "callNumTotal" : 0,
-                "failureNum" : 0,
-                "processingNum" : 0,
-                "successNum" : 0
+                    "subscribeTodayNum" : 0,
+                    "taskNum" : 0,
+                    "toCallUserNum" : 0
                 }
+            },
+            todayCompleteDto : {
+                "callTalkedNumToal" : 0,
+                "callTalkedTotal" : 0,
+                "calledDuration" : 0,
+                "calledNumTotal" : 0,
+                "calledTotal" : 0,
+                "failureNum" : 0,
+                "progressingNum" : 0,
+                "successNum" : 0
             }
         }
     },
@@ -194,14 +204,6 @@ export default {
                             normal: {
                                 show: false,
                                 position: 'center'
-                            },
-                            emphasis: {
-                                show: true,
-                                textStyle: {
-                                    fontSize: '12',
-                                    fontWeight: 'bold'
-                                },
-                                formatter: "{b}({d}%)"
                             }
                         },
                         labelLine: {
@@ -218,6 +220,12 @@ export default {
         change:function(){
             
         },
+        date_init(date){
+            let year=date.getFullYear();
+            let month=(date.getMonth()+1)<10?("0"+(date.getMonth()+1)):(date.getMonth()+1);
+            let day=date.getDate()<10?("0"+date.getDate()):date.getDate();
+            return year+'-'+month+'-'+day;
+        },
         mission_init:function(item){
             for(let i=0;i<4;i++){
                 if(i<item.length){
@@ -229,29 +237,28 @@ export default {
     },
     //初始化首页数据
     mounted(){
-        var data = {
-			name: 'qy1003',
-			password: 'qy1003',
-			password2: '123456',
-        };
         var _this=this;
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate', data).then(res=>{
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/getIndexData'
-            ).then( res=>{
+        var beginTime=this.date_init(new Date(new Date().getTime() - 1*24*60*60*1000));
+        var endTime=this.date_init(new Date());
+        this.$ajax.post(this.$preix+'/new/getIndexData'
+        ).then( res=>{
+        if(res.data.code==200){
+                _this.datas=res.data.info;
+                console.log(res.data.info)
+            }
+        });
+        this.$ajax.post(this.$preix+'/new/calltask/queryTaskOnwallChartBySeat'
+        ).then( res=>{
             if(res.data.code==200){
-
-                    _this.datas=res.data.info;
-                    console.log(res.data.info)
-                }
-            });
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryTaskOnwallChartBySeat'
-            ).then( res=>{
-                if(res.data.code==200){
-                    _this.mission_init(res.data.info);
-                }
-            });
-        })
-        
+                _this.mission_init(res.data.info);
+            }
+        });
+        this.$ajax.post(this.$preix+'/new/callstatistics/querySeatTaskCompletion',{beginTime:beginTime,endTime:endTime}
+        ).then( res=>{
+            if(res.data.code==200&&res.data.info){
+                _this.todayCompleteDto=res.data.info;
+            }
+        });
     }
 }
 </script>

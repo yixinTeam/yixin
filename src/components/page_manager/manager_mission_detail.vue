@@ -11,7 +11,7 @@
             <div class="part2_tit">
                 <el-input placeholder="按任务名称搜索" prefix-icon="el-icon-search" v-model="search" class="search" size="mini">
                 </el-input>
-                <el-button type="info" class="button" :style="{float:'left'}" @click="missoin_search">搜索</el-button>
+                <el-button type="info" class="button" :style="{float:'left'}" @click="mission_search">搜索</el-button>
                 <el-button type="info" plain class="button">导出当前结果</el-button>
             </div>
             <div class="zhankai" v-if="search_state==false">
@@ -22,11 +22,11 @@
                 </div>
                 <div>
                     <p class="grey">跟进坐席</p>
-                    <p class="black" v-for=" (item,index) in worker_list" :key="index" :class="{see_active:worker_state==index}" @click="worker_change(index,item.id)">{{item.shortName}}</p>
+                    <p class="black" v-for=" (item,index) in worker_list" :key="index" :class="{see_active:worker_state.indexOf(index)!=-1}" @click="worker_change(index,item.id)">{{item.shortName}}</p>
                 </div>
                 <div>
                     <p class="grey">导入时间</p>
-                    <el-date-picker v-model="leading_date" type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" size="mini" prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
+                    <el-date-picker v-model="leading_date" type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" size="mini" @change="date_change" prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </div>
                 <div>
@@ -46,7 +46,7 @@
                 <div>
                     <p class="grey">筛选条件</p>
                     <p class="black see_active">客户状态：{{custom_state==''?custom_list[0].value:custom_list[custom_state].value}}</p>
-                    <p class="black see_active">跟进坐席：{{worker_list[worker_state].shortName}}</p>
+                    <p class="black see_active">跟进坐席：<span v-for="(item,index) in worker_state" :key="index">{{worker_list[item].shortName}};</span></p>
                     <el-tag type="info" class="tag" v-if="leading_date!=null&&leading_date.length>0">{{'导入时间： '+leading_date[0]+'~'+leading_date[1]}}</el-tag>
                     <p class="black see_active" v-if="tags.length>0">客户标签：<span  v-for="(item,index) in tags" :key="index" v-if="item!=undefined" >{{item.value}}&#12288;</span></p>
                 </div>
@@ -251,6 +251,7 @@ font-size: 12px;
 </style>
 
 <script>
+import md5 from '../js/md5.js'
 import history from '../component/history_talk.vue'
 export default {
     name:'mission_detail',
@@ -261,7 +262,7 @@ export default {
             search:'',
             search_state:false,
             custom_state:0,
-            worker_state:0,
+            worker_state:[0],
             leading_date:[],
             page_count:10,
             seat:'',
@@ -288,13 +289,33 @@ export default {
     methods:{
         search_change:function(value){
             this.search_state=value;
+            this.mission_search();
         },
         custom_change:function(value){
             this.custom_state=value;
+            this.mission_search();
         },
         worker_change:function(value,id){
-            this.worker_state=value;
-            this.seat=id;
+            // this.worker_state=value;
+            // this.seat=id;
+            if(this.worker_state.indexOf(value)==-1&&value!=0){
+                this.worker_state.push(value);
+                for(let i in this.worker_state){
+                    if(this.worker_state[i]==0){
+                        //delete this.worker_state[i];
+                        this.worker_state.splice(i,1);
+                    }
+                }
+            }else if(this.worker_state.indexOf(value)!=-1&&this.worker_state.length>1){
+                var index=this.worker_state.indexOf(value);
+                this.worker_state.splice(index,1);
+            }else if(value==0){
+                this.worker_state=[0];
+            }
+            this.mission_search();
+        },
+        date_change(){
+            this.mission_search();
         },
         handlefp:function(index,row){
             this.assign=true;
@@ -302,11 +323,21 @@ export default {
         },
         //打开历史记录
         handlexx:function(index,row){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/queryResultHistoryEntity',{'taskId':row.taskId,'taskClientId':row.taskClientId}
+            this.$ajax.post(this.$preix+'/new/seatWorkbench/queryResultHistoryEntity',{'taskId':row.taskId,'taskClientId':row.taskClientId}
             ).then( res=>{
                 if(res.status==200){
                     this.show = true;
+                    res.data.info.details.map(item=>{
+                        item.taglist=[];
+                        for(var key in item){
+                            if(key.indexOf('customTag')!=-1){
+                                item.taglist.push(item[key]);
+                            }
+                        }
+                    });
+                    console.log(res.data.info.details);
                     this.history_detail=res.data.info.details;
+                    this.show=true;
                 }
             });
         },
@@ -316,7 +347,7 @@ export default {
         },
         //查询任务信息
         mission_init(data){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryCallTaskDetailList',data)
+            this.$ajax.post(this.$preix+'/new/calltask/queryCallTaskDetailList',data)
             .then( (res) => {
                 if(res.data.code==200){
                     for(let i=0;i<res.data.rows.length;i++){
@@ -336,8 +367,9 @@ export default {
         },
         //页码改变
         page_change(val){
+            let seatAccountIds=this.worker_state.map(item=>this.worker_list[item].id);
             this.pageNum=val;
-            var data={'taskId':this.$route.query.id,userResults:this.custom_list[this.custom_state].key,createBeginTime:this.leading_date!=null?this.leading_date[0]:'',createEndTime:this.leading_date!=null?this.leading_date[1]:'',nameOrNumber:this.search,'seatAccountIds':this.worker_list[this.worker_state].id,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField};
+            var data={'taskId':this.$route.query.id,userResults:this.custom_list[this.custom_state].key,createBeginTime:this.leading_date!=null?this.leading_date[0]:'',createEndTime:this.leading_date!=null?this.leading_date[1]:'',nameOrNumber:this.search,'seatAccountIds':seatAccountIds,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField};
             for(let i=0;i<this.tags.length;i++){
                 if(this.tags[i]!=null||this.tags[i]!=undefined){
                     var str='customTag'+(i+1);
@@ -353,9 +385,10 @@ export default {
         },
         //排序搜索
         sort_change({column, prop, order} ){
+            let seatAccountIds=this.worker_state.map(item=>this.worker_list[item].id);
             this.orderWay=order.split('ending')[0];
             this.orderField=prop;
-            var data={'taskId':this.$route.query.id,"requireTotalCount" : true,userResults:this.custom_list[this.custom_state].key,createBeginTime:this.leading_date!=null?this.leading_date[0]:'',createEndTime:this.leading_date!=null?this.leading_date[1]:'',nameOrNumber:this.search,'seatAccountIds':this.worker_list[this.worker_state].id,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField};
+            var data={'taskId':this.$route.query.id,"requireTotalCount" : true,userResults:this.custom_list[this.custom_state].key,createBeginTime:this.leading_date!=null?this.leading_date[0]:'',createEndTime:this.leading_date!=null?this.leading_date[1]:'',nameOrNumber:this.search,'seatAccountIds':seatAccountIds,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField};
             for(let i=0;i<this.tags.length;i++){
                 if(this.tags[i]!=null||this.tags[i]!=undefined){
                     var str='customTag'+(i+1);
@@ -370,8 +403,9 @@ export default {
             this.mission_init(data);
         },
         //条件搜索
-        missoin_search:function(){
-            var data={'taskId':this.$route.query.id,"requireTotalCount" : true,userResults:this.custom_list[this.custom_state].key,createBeginTime:this.leading_date!=null?this.leading_date[0]:'',createEndTime:this.leading_date!=null?this.leading_date[1]:'',nameOrNumber:this.search,'seatAccountIds':this.worker_list[this.worker_state].id};
+        mission_search:function(){
+            let seatAccountIds=this.worker_state.map(item=>this.worker_list[item].id);
+            var data={'taskId':this.$route.query.id,"requireTotalCount" : true,userResults:this.custom_list[this.custom_state].key,createBeginTime:this.leading_date!=null?this.leading_date[0]:'',createEndTime:this.leading_date!=null?this.leading_date[1]:'',nameOrNumber:this.search,'seatAccountIds':seatAccountIds};
             for(let i=0;i<this.tags.length;i++){
                 if(this.tags[i]!=null||this.tags[i]!=undefined){
                     var str='customTag'+(i+1);
@@ -384,7 +418,6 @@ export default {
                 }
             }
             this.mission_init(data);
-            this.search_state=true;
         },
         handleCommand(command) {
             if(this.tags[command.index]==undefined||this.tags[command.index].value==null){
@@ -394,11 +427,11 @@ export default {
             }else{
                 this.tags[command.index]={'value':command.value};
             }
-            
+            this.mission_search();
         },
         //完成分配
         assign_com(){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/clientReallocate',{'seatAccountId':this.worker_fp.seatId,'taskClientId':this.worker_fp.taskClientId,'taskResultLastId':this.worker_fp.taskResultLastId})
+            this.$ajax.post(this.$preix+'/new/calltask/clientReallocate',{'seatAccountId':this.worker_fp.seatId,'taskClientId':this.worker_fp.taskClientId,'taskResultLastId':this.worker_fp.taskResultLastId})
             .then( (res) => {
                 if(res.data.code==200){
                     this.assign=false;
@@ -413,7 +446,7 @@ export default {
         var data={'taskId':this.$route.query.id,"requireTotalCount" : true};
         this.mission_init(data);
         //设置坐席标签
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/account/findSeatList',{'pageSize':100})
+        this.$ajax.post(this.$preix+'/new/account/findSeatList',{'pageSize':100})
         .then( (res) => {
             if(res.data.code==200){
                 this.worker_list2=res.data.rows;
@@ -421,7 +454,7 @@ export default {
                 this.worker_list=res.data.rows;
             }
         });
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/tag/findTagList')
+        this.$ajax.post(this.$preix+'/new/tag/findTagList')
         .then( (res) => {
             if(res.data.code==200){
                 for(let i=0;i<res.data.info.length;i++){

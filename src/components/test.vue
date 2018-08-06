@@ -35,6 +35,9 @@
             
             </div>
         </div>
+        <a-player :music="songList" :showlrc="3" :narrow="false" theme="#b7daff" mode="circulation" v-if="flag" listmaxheight='96px' ref="player"></a-player>
+
+    
     </div>
 </template>
 <style scoped>
@@ -45,6 +48,7 @@
 </style>
 
 <script>
+import VueAplayer from 'vue-aplayer'
 export default {
     name:'test',
     data:function(){
@@ -58,8 +62,19 @@ export default {
               'index':1,
               'shortName':'fwjqy001',
               'loginName':'张阿猫'
-            }]
+            }],
+            flag:false,
+
+            musicList:'',
+
+            songList:[]
         }
+    },
+    components: {
+
+
+        'a-player': VueAplayer
+
     },
     methods:{
         // handlefp:function(){
@@ -81,6 +96,11 @@ export default {
         handlexx:function(){
             this.show = !this.show;
         }
+    },
+    mounted(){
+        let aplayer = this.$refs.player.control;
+
+        aplayer.play();
     }
 }
 </script>

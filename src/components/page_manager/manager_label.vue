@@ -2,7 +2,7 @@
     <div class="container">
         <div class="part2">
             <div class="part2_tit">
-                <el-button type="info" class="button" :style="{float:'left'}" @click="add">新增用户标签</el-button>
+                <el-button type="primary" class="button" :style="{float:'left'}" @click="add">新增客户标签</el-button>
                 <el-button plain class="button" :style="{'float':'left'}" @click="DialogVisible=true">效果预览</el-button>
                 <el-tooltip class="item" effect="dark"  placement="right">
                     <div slot="content" :style="{'min-width':'200px'}">客户标签可以与外呼任务关联，让坐席在与客户沟通时快速标记用户，以便后续的客户分类与跟进。</div>
@@ -10,7 +10,7 @@
                 </el-tooltip>
             </div>
             <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table">
-                <el-table-column prop="tagName" label="属性名称" class-name="line2" sortable  :show-overflow-tooltip=true min-width="100"> </el-table-column>
+                <el-table-column prop="tagName" label="标签名称" class-name="line2" sortable  :show-overflow-tooltip=true min-width="100"> </el-table-column>
                 <el-table-column label="可选值" class-name="line3" :show-overflow-tooltip=true min-width="300">
                     <template slot-scope="scope">
                         {{scope.row.tags.join(';')}}
@@ -22,10 +22,10 @@
                     <template slot-scope="scope">
                         <el-button
                         size="mini" type="text"
-                        @click="handlech(scope.$index, scope.row)">修改属性</el-button>&#12288;|
+                        @click="handlech(scope.$index, scope.row)">修改标签</el-button>&#12288;|
                         <el-button
                         size="mini" type="text"
-                        @click="handlede(scope.$index, scope.row)">删除属性</el-button>
+                        @click="handlede(scope.$index, scope.row)">删除标签</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -124,6 +124,7 @@
 </style>
 
 <script>
+import md5 from '../js/md5.js'
 import tag from '../component/dialog_tag.vue'
 export default {
     name:'labels',
@@ -144,8 +145,7 @@ export default {
             this.add_tag=true;
         },
         handlede:function(index,row){
-            console.log(row);
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/tag/delTag',{'id':row.id})
+            this.$ajax.post(this.$preix+'/new/tag/delTag',{'id':row.id})
             .then( (res) => {
                 if(res.data.code==200){
                     this.tag_init();
@@ -156,7 +156,7 @@ export default {
             this.add_tag=true;
         },
         tag_init:function(data){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/tag/findTagList',data)
+            this.$ajax.post(this.$preix+'/new/tag/findTagList',data)
             .then( (res) => {
                 if(res.data.code==200){
                     for(let i=0;i<res.data.info.length;i++){
@@ -175,12 +175,14 @@ export default {
         }
     },
     mounted(){
-        var data={
-            'name':'wshqy','password':'123456','password2':'123456'
-        };
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
-            data
-        );
+        // var data={
+        //     'name':'qy1','password':md5.md5('123456'),'password2':'123456'
+        // };
+        // this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
+        //     data
+        // ).then(res=>{
+        //     this.tag_init();
+        // })
         this.tag_init();
     }
 }

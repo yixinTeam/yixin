@@ -8,15 +8,6 @@
             呼叫详单
         </div>
         <div class="part2">
-            <div class="part2_tit">
-                <el-input
-                    placeholder="按任务名称搜索"
-                    prefix-icon="el-icon-search"
-                    v-model="search" class="search" size="mini">
-                </el-input>
-                <el-button type="info" class="button" :style="{float:'left'}" @click="mission_search">搜索</el-button>
-                <el-button type="info" plain class="button">导出当前结果</el-button>
-            </div>
             <div class="zhankai" v-if="search_state==false">
                 <el-button type="info" plain class="button" @click="search_change(true)">收起</el-button>
                 <div>
@@ -35,6 +26,7 @@
                     <p class="grey">最近通话&#12288;&#12288;</p>
                     <el-date-picker
                     v-model="close_date"
+                    @change="date_change"
                     type="daterange"
                     range-separator="-"
                     :picker-options="pickerOptions"
@@ -229,14 +221,20 @@ export default {
         }
     },
     methods:{
+        date_change(){
+            this.mission_search();
+        },
         search_change:function(value){
             this.search_state=value;
+            this.mission_search();
         },
         custom_change:function(value){
             this.custom_state=value;
+            this.mission_search();
         },
         call_change:function(value){
             this.call_state=value;
+            this.mission_search();
         },
         mission_change:function(value){
             if(this.mission_state.indexOf(value)==-1&&value!=0){
@@ -253,10 +251,11 @@ export default {
             }else if(value==0){
                 this.mission_state=[0];
             }
+            this.mission_search();
         },
         task_init(){
             //任务列表
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryRightCallTaskList',{'pageSize':100})
+            this.$ajax.post(this.$preix+'/new/calltask/queryRightCallTaskList',{'pageSize':100})
             .then( (res) => {
                 if(res.data.code==200){
                     res.data.rows.splice(0,0,{'taskName':'全部','taskId':''});
@@ -266,7 +265,7 @@ export default {
             });
         },
         mission_init(data){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/callstatistics/findCallStatisticsDetailList',data)
+            this.$ajax.post(this.$preix+'/new/callstatistics/findCallStatisticsDetailList',data)
             .then( (res) => {
                 if(res.data.code==200){
                     if(res.data.totalCount){
@@ -292,7 +291,6 @@ export default {
                 }
             }
             this.mission_init(data);
-            this.search_state=true;
         },
         //页码改变
         page_change(val){

@@ -1,5 +1,5 @@
 <template>
-    <div class="container" v-on:click.capture="contextmenu.state=false">
+    <div class="container" v-on:click.capture="hide">
         <!-- 蒙层 -->
         <div class="mask" v-show="call_state!=0">
             <div></div>
@@ -18,10 +18,10 @@
                 <div :style="{'width':'50%','height':'100%'}"></div>
                 <div :style="{'width':'50%','height':'100%','left':'50%','top':'53px'}"></div>
             </div>
-            <div class="tit">
-                <el-button type="primary" size="mini" icon="el-icon-sort" :style="{'float':'left','margin':'8px 5%'}" @click="checkMicrophone"><span v-show="online_state==0">在线</span><span v-show="online_state==0.5">......</span><span v-show="online_state==1">离线</span></el-button>
-                <div id="auto_call">
-                    <el-button type="info" size="mini" :style="{'float':'right','margin':'8px 5%'}" @click="call_set=!call_set">自动呼叫</el-button>
+            <div class="tit staff_stage_tit">
+                <el-button type="info" size="mini" icon="el-icon-sort" :style="{'float':'left','margin':'8px 5%','border-color':'#fff'}" @click="online_change" :class="{call_active:online_state==0}"><span v-show="online_state==0">在线</span><span v-show="online_state==0.5">......</span><span v-show="online_state==1">离线</span></el-button>
+                <div id="auto_call" @click.stop="call_set=true">
+                    <el-button type="info" size="mini" :style="{'float':'right','margin':'8px 5%','border-color':'#fff'}" @click="call_set=!call_set" :class="{call_active:call_auto=='true'}">自动呼叫</el-button>
                     <div v-show="call_set">
                         <el-switch
                             v-model="call_auto"
@@ -35,7 +35,7 @@
                     </div>
                 </div>
                 <el-input size="small" :style="{'width':'90%'}" class="search"
-                    placeholder="按客户姓名或手机号搜索"
+                    placeholder="输入客户姓名或手机号后回车进行搜索"
                     prefix-icon="el-icon-search"
                     v-model="search"  @keyup.enter.native="search_task()">
                 </el-input>
@@ -47,7 +47,7 @@
             </div>
             <div class="con">
                 <el-tree class="staff" :data="TaskBySeat_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0" @scroll.native="test($event)">
-                    <div class="custom-tree-node detail_init" slot-scope="{ node, data }" @click="detail_init(data,1)" @contextmenu='prevent($event,data,1)'>
+                    <div class="custom-tree-node detail_init" slot-scope="{ node, data }" @click="detail_init(data,1)">
                         <!-- 呼叫结果 默认值0：未开始 10：正常通话 11：转给其他坐席 12：转值班电话 21：没坐席接听 22：未接通 -->
                         <p>{{ node.label}}</p>
                         <span>{{data.lastCalledTime}}</span>
@@ -60,7 +60,7 @@
                     </div>
                 </el-tree>
                 <el-tree class="staff" :data="DialPlanIntroWithPage_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0&&DialPlanIntroWithPage_data.length!=0">
-                    <div class="custom-tree-node detail_init" slot-scope="{ node, data }" @click="detail_init(data,2)" @contextmenu='prevent($event,data,2)'>
+                    <div class="custom-tree-node detail_init" slot-scope="{ node, data }" @click="detail_init(data,2)" @contextmenu='prevent($event,data)'>
                         <!-- 呼叫结果 默认值0：未开始 10：正常通话 11：转给其他坐席 12：转值班电话 21：没坐席接听 22：未接通 -->
                         <p>{{ node.label}}</p>
                         <span>{{data.lastCalledTime}}</span>
@@ -92,12 +92,12 @@
                 <div class="mes2">
                     <div id="call">
                         <div class="call_state" v-show="call_state==0" @click="startCall">
-                            <i class="el-icon-phone call_icon"></i>
+                            <i class="el-icon-phone call_icon" id="call_icon"></i>
                         </div>
                         <div v-show="call_state==1">
                             <div class="call_state" :style="{'padding':'0 15px'}">
                                 <i class="el-icon-phone-outline call_icon"></i>
-                                正在呼叫
+                                <span>正在呼叫</span>
                             </div>
                             <i class="el-icon-more call_icon" @click="sipTerminate"></i>
                             <i class="el-icon-service call_icon" @click="meteMicrophone"></i>
@@ -105,23 +105,23 @@
                         <div v-show="call_state==2">
                             <div class="call_state" :style="{'padding':'0 15px'}">
                                 <i class="el-icon-phone-outline call_icon"></i>
-                                呼叫中
+                                <span>&nbsp;呼叫中&nbsp;</span>
                             </div>
                             <i class="el-icon-more call_icon" @click="sipTerminate"></i>
                             <i class="el-icon-service call_icon" @click="meteMicrophone"></i>
                         </div>
                         <div v-show="call_state==3">
                             <div class="call_state" :style="{'padding':'0 15px'}">
-                                通话中  <span :style="{'font-size':'12px'}">{{timestr}}</span>
+                                <span>&nbsp;通话中&nbsp;</span> <span :style="{'font-size':'12px'}">{{timestr}}</span>
                             </div>
                             <i class="el-icon-more call_icon" @click="sipTerminate"></i>
                             <i class="el-icon-service call_icon" @click="meteMicrophone"></i>
                         </div>
                         <div v-show="call_state==4">
-                            <div class="call_state">
+                            <div class="call_state" :style="{'padding':'0 15px'}">
                                 <i class="el-icon-phone call_icon"></i>
+                                <span>&nbsp;刚刚 通话 {{timestr2?timestr2:'0秒'}}&nbsp;</span>
                             </div>
-                            <span>刚刚 通话 {{timestr2}}</span>
                         </div>
                     </div>
                     <p class="black" :style="{'font-weight':'700'}">{{name}}</p>
@@ -148,7 +148,7 @@
                     <div class="state">
                         <p class="grey">跟进状态</p>
                         <p class="black see" v-for=" item in worker_list" :key="item.key" :class="{see_active:worker_state==item.key}" @click="worker_change(item.key)">{{item.value}}</p>
-                        <div class="grey">下次联系时间：<el-date-picker v-model="time_next" type="datetime" placeholder="无" size="mini" prefix-icon="date_icon el-icon-date" class="date_picker"> </el-date-picker></div>
+                        <div class="grey">下次联系时间：<el-date-picker v-model="time_next" type="datetime" placeholder="无" size="mini" prefix-icon="date_icon el-icon-date" class="date_picker" value-format="yyyy-MM-dd HH:mm:ss"> </el-date-picker></div>
                     </div>
                 </div>
                 <div class="tag">
@@ -233,6 +233,9 @@
     }
 </style>
 <style scoped>
+    .call_active{
+        background-color:#7496F2;
+    }
     #auto_call{
         position: relative;
     }
@@ -323,6 +326,10 @@
         border: 1px solid #ccc;
         background: #fff;
         box-sizing: border-box;
+        overflow: hidden;
+    }
+    .staff{
+        position: unset;
     }
     .aside .con{
         min-height: 60vh;
@@ -344,11 +351,12 @@
     .aside .foot{
         position: absolute;
         left: 0;
-        bottom: 33px;
+        bottom: 0;
         width: 100%;
         margin: 0;
         cursor: default;
         background:#fff;
+        padding-bottom:20px;
     }
     .aside .foot li{
         width: 49%;
@@ -389,7 +397,7 @@
     .mes2{
         overflow: hidden;
         text-align: left;
-        height: 72px;
+        height: 110px;
         float: left;
         width: 43%;
         margin: 0px 0 10px 0;
@@ -404,19 +412,35 @@
         float: right;
         padding: 0 2%;
     }
+    .call_state .call_icon{
+        font-size: 23px;
+        line-height:45px;
+        float: left;
+        margin:0;
+    }
+    #call_icon{
+        margin:0 11px;
+    }
     .call_icon{
-        font-size: 20px;
+        font-size: 23px;
+        line-height:45px;
+        float: left;
+        margin: 31px 4px;
     }
     .call_state{
-        height: 30px;
+        overflow: hidden;
         color: #fff;
-        min-width: 30px;
+        min-width: 47px;
         background-color: rgba(0, 204, 102, 1);
-        line-height: 34px;
-        border-radius: 30px;
+        border-radius: 47px;
         text-align: center;
         display: inline-block;
-        margin: 21px;
+        margin: 31px 10px;
+        float: left;
+    }
+    .call_state span{
+        line-height:45px;
+        float: left;
     }
     .mes{
         overflow: hidden;
@@ -424,6 +448,9 @@
         text-align: left;
         width: 50%;
         float: left;
+    }
+    .mes>div{
+        margin:10px 0;
     }
     .father:hover input,.father:hover select{
         width: auto;
@@ -434,6 +461,9 @@
     .summary .tit{
         font-weight: 700;
         text-align: left;
+    }
+    body .tit{
+        font-size:16px;
     }
     .see{
         background: #CDCDCD;
@@ -461,6 +491,7 @@
         float: left;
         line-height: 28px;
         margin:0px 4px;
+        font-size:14px;
     }
     .submit{
         padding: 8px 0;
@@ -532,7 +563,7 @@ export default {
             call_state:0,
             call_success:0,
             activeIndex:'1',
-            worker_list:[{'key':'0','value':'发展成功'},{'key':'1','value':'持续跟进'},{'key':'2','value':'发展失败'}],
+            worker_list:[{'key':'2','value':'发展成功'},{'key':'1','value':'持续跟进'},{'key':'3','value':'发展失败'}],
             TaskBySeat_data: [],
             DialPlanIntroWithPage_data:[],
             defaultProps: {
@@ -546,7 +577,7 @@ export default {
             company:'',
             email:'',
             think:'',
-            worker_state:0,
+            worker_state:2,
             time_next:'',
             tag_data: [],
             label_list:[],
@@ -558,7 +589,7 @@ export default {
                     totalContactNum:0,
                     details:[
                         {
-                            answerType:0,callDuration:"2秒",callEndTime:"2018-05-03 11:03:57",callReault:22,callReaultString:"未接通",callSeesionId:"17ac9e5a-b01b-4565-bc9b-720b3bb63103",callStartTime:"2018-05-03 11:03:55",contactType:10,id:"18479c1e-d650-45f5-b3a4-1b46b9a1ae07",loginName:"qy1003",number:"15236536263",partnerAccountId:"05838197-311e-4dcb-9bc9-3d92ada834d3",seatAccountId:"71ad8256-937e-4614-890a-0f83d25319a6",shortName:"我的坐席",taskClientId:"8bcd3b7d-3b74-4099-9abe-a421b9aaab27",taskId:"da59b508-2443-42ca-af8d-33373d28b511",userResult:1,userResultStr:"继续跟进"
+                            answerType:0,callDuration:null,callEndTime:null,callReault:22,callReaultString:null,callSeesionId:null,callStartTime:"2018-05-03 11:03:55",contactType:10,id:null,loginName:null,number:null,partnerAccountId:null,seatAccountId:null,shortName:null,taskClientId:null,taskId:null,userResult:1,userResultStr:"继续跟进"
                         }
                     ]
                 },
@@ -593,7 +624,7 @@ export default {
             }],
             task_state:0,
             planData:{},
-            online_state:0,
+            online_state:1,
             left:{taskClientId:null,
             taskListId:null,taskId:null},
             ua:null,
@@ -616,27 +647,24 @@ export default {
       DialogAdd,history
     },
     mounted() {
+        window.onbeforeunload = function(){
+            
+            this.disconnect();
+        };
         //缩小导航菜单
-        var data = {
-			name: 'qy1003',
-			password: 'qy1003',
-			password2: '123456',
-		};
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate', data).then(res=>{
-            this.$emit("close");
-            this.TaskList_init({});
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/tag/findTagList')
-            .then( (res) => {
-                if(res.data.code==200){
-                    for(let i=0;i<res.data.info.length;i++){
-                        res.data.info[i].tags=res.data.info[i].tagValue.split(';');
-                    }
-                    this.tag_data=res.data.info;
+        this.$emit("close");
+        this.TaskList_init({});
+        this.$ajax.post(this.$preix+'/new/tag/findTagList')
+        .then( (res) => {
+            if(res.data.code==200){
+                for(let i=0;i<res.data.info.length;i++){
+                    res.data.info[i].tags=res.data.info[i].tagValue.split(';');
                 }
-            });
-            this.call_init(this.hasGetUserMedia());
-            this.connect();
-        })
+                this.tag_data=res.data.info;
+            }
+        });
+        this.call_init(this.hasGetUserMedia());
+        this.connect();
     },
     beforeDestroy(){
         console.log(this.ua);
@@ -694,15 +722,18 @@ export default {
             });
             //WebSocket连接事件
             this.ua.on('disconnected',function(data){
+                
                 console.log("onDisconnected- ",data);
             });
             //注册事件
             this.ua.on('registered',function(data){
                 console.log("onRegistered- ",data);
+                _this.online_state=0;
             });
             //注册断开事件
             this.ua.on('unregistered',function(data){
                 console.log("onUnregistered- ",data);
+                _this.online_state=1;
             });
     
             /*新的传入或传出呼叫事件*/
@@ -796,7 +827,7 @@ export default {
                 alert("当前浏览器不支持，请更换其他浏览器(推荐Google Chrome浏览器)");
                 return;
             }
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/getWorkbenchRst')
+            this.$ajax.post(this.$preix+'/new/seatWorkbench/getWorkbenchRst')
             .then( (res) => {
                 if(res.data.code != 200){
                     return;
@@ -810,7 +841,7 @@ export default {
         connect:function () {
             var _this=this;
             // websocket的连接地址，此值等于WebSocketMessageBrokerConfigurer中registry.addEndpoint("/icc/websocket").withSockJS()配置的地址
-            var socket = new SockJS('https://10.240.80.72:8443/icc-interface/ws/icc/websocket');
+            var socket = new SockJS(this.$preix+'/ws/icc/websocket');
             this.stompClient = Stomp.over(socket);
             this.stompClient.connect({}, function(frame) {
                 console.log('Connected: ' + frame);
@@ -842,12 +873,9 @@ export default {
         },
         //检查麦克风
         checkMicrophone:function (){
-            this.online_state=0.5
             navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(mediaStream){
-                this.online_state==0;
                 console.log("麦克风正常")
             }).catch(function(error) {
-                this.online_state==1;
                 console.log("麦克风未接入")
             });
         },
@@ -919,7 +947,7 @@ export default {
         },
         //初始化预约列表
         BookedList_init(data){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/queryBookedTaskListBySeat',data)
+            this.$ajax.post(this.$preix+'/new/seatWorkbench/queryBookedTaskListBySeat',data)
             .then( (res) => {
                 if(res.status==200){
                     this.task_state=1;
@@ -932,6 +960,7 @@ export default {
             this.show=false;
             console.log(item);
             this.call_state=0;
+            this.callIccSessionId=null;
             if(item.children){
                 return;
             }
@@ -944,7 +973,7 @@ export default {
                 this.left.taskId=null;
                 this.left.taskListId=item.id;
             }
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/getCallTaskClientDetail',{'taskClientId':item.taskClientId})
+            this.$ajax.post(this.$preix+'/new/seatWorkbench/getCallTaskClientDetail',{'taskClientId':item.taskClientId})
             .then( (res) => {
                 if(res.data.code==200){
                     this.name=res.data.info.userName?res.data.info.userName:'';
@@ -960,7 +989,7 @@ export default {
                     this.id=item.id;
                 }
             });
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/findSummaryAndHistoryDetail',{'taskClientId':item.taskClientId,'taskId':item.taskId})
+            this.$ajax.post(this.$preix+'/new/seatWorkbench/findSummaryAndHistoryDetail',{'taskClientId':item.taskClientId,'taskId':item.taskId})
             .then( (res) => {
                 if(res.status==200){
                     if(res.data.summaryDto.tags[0]!=undefined){
@@ -973,7 +1002,7 @@ export default {
         //设置呼叫任务计划
         TaskBySeat_init(data){
             this.TaskBySeat_data=[];
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/queryTaskIntroBySeat',data
+            this.$ajax.post(this.$preix+'/new/seatWorkbench/queryTaskIntroBySeat',data
             ).then( res=>{
             if(res.data.code==200){
                     let _this=this;
@@ -984,7 +1013,7 @@ export default {
                         var param = {};
                         param.taskId = res.data.rows[i].taskId;
                         data?param.nameOrNumber=data.nameOrNumber:'';
-                        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/queryProcClientWithTaskBySeat',param
+                        this.$ajax.post(this.$preix+'/new/seatWorkbench/queryProcClientWithTaskBySeat',param
                         ).then( res=>{
                             if(res.data.code==200){
                                 
@@ -1001,7 +1030,7 @@ export default {
         //新增呼叫计划列表
         DialPlanIntroWithPage_init(data){
             this.DialPlanIntroWithPage_data=[];
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/queryDialPlanIntroWithPage',data
+            this.$ajax.post(this.$preix+'/new/seatWorkbench/queryDialPlanIntroWithPage',data
             ).then( res=>{
             if(res.data.code==200){
                     let _this=this;
@@ -1012,7 +1041,7 @@ export default {
                         var param = {};
                         param.dialplanId = res.data.rows[i].id;
                         data?param.nameOrNumber=data.nameOrNumber:'';
-                        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/queryTaskListByDialPlan',param
+                        this.$ajax.post(this.$preix+'/new/seatWorkbench/queryTaskListByDialPlan',param
                         ).then( res=>{
                             if(res.data.code==200){
                                 res.data.rows.map(item=>{
@@ -1037,7 +1066,6 @@ export default {
         //右键菜单
         prevent:function(e,data,note){
             this.planData=data;
-            this.planData.type=note;
             console.log(data);
             if(note==1&&data.children){
                 return
@@ -1057,27 +1085,30 @@ export default {
             //     this.contextmenu.state=false;
             // }
         },
+        hide(){
+            this.contextmenu.state=false;
+            this.call_set=false;
+        },
         //删除呼叫任务
         remove(){
-            console.log(this.planData);
-            if(this.planData.type==1&&this.planData.children==undefined){
+            console.log(this.planData,this.planData.children);
+            if(this.planData.children!=undefined){
                 let Id=this.planData.taskClientId;
-                this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/deleteTaskList',{'id':Id}
+                this.$ajax.post(this.$preix+'/new/seatWorkbench/deleteDialplan',{'id':Id}
                 ).then( res=>{
                     if(res.data.code==200){
                         this.reload();
                     }
                 })
-            }else if(this.planData.type==2){
-                let Id=this.planData.dialplanId||this.planData.id;
-                this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/deleteDialplan',{'id':Id}
+            }else{
+                let Id=this.planData.id;
+                this.$ajax.post(this.$preix+'/new/seatWorkbench/deleteTaskList',{'id':Id}
                 ).then( res=>{
                     if(res.data.code==200){
                         this.reload();
                     }
                 })
             }
-            this.contextmenu.state=false;
         },
         //记录客户标签
         handleCommand(command) {
@@ -1090,7 +1121,7 @@ export default {
         //设置历史记录信息
         enter(item){
             this.show=true;
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/queryResultHistoryEntity',{'taskId':item.taskId,'taskClientId':item.taskClientId}
+            this.$ajax.post(this.$preix+'/new/seatWorkbench/queryResultHistoryEntity',{'taskId':item.taskId,'taskClientId':item.taskClientId}
             ).then( res=>{
                 if(res.status==200){
                     this.history_detail=res.data.info.details;
@@ -1103,58 +1134,61 @@ export default {
         },
         //提交小结
         update(){
-            let data={'desc':this.think,'nextContactTime':this.time_next,'taskId':this.taskId,'taskClientId':this.taskClientId,userResult:this.worker_list[this.worker_state].key,'taskListId':this.id,'sessionId':this.callIccSessionId}
-            for(let i=0;i<this.tags.length;i++){
-                if(this.tags[i]!=null||this.tags[i]!=undefined){
-                    var str='customTag'+(i+1);
-                    data[str]=this.tags[i].value;
+            if(this.callIccSessionId){
+                let data={'desc':this.think,'nextContactTime':this.time_next,'taskId':this.taskId,'taskClientId':this.taskClientId,'userResult':this.worker_list[this.worker_state].key,'taskListId':this.id,'sessionId':this.callIccSessionId}
+                for(let i=0;i<this.tags.length;i++){
+                    if(this.tags[i]!=null||this.tags[i]!=undefined){
+                        var str='customTag'+(i+1);
+                        data[str]=this.tags[i].value;
+                    }
                 }
+                var _this=this;
+                this.$ajax.post(this.$preix+'/new/seatWorkbench/updateCallTag',data
+                ).then( res=>{
+                    if(res.data.code!=200){
+                        alert(res.data.message);
+                    }else{
+                        console.log('提交小结',this.active_data);
+                        _this.call_state=0;
+                        this.TaskBySeat_data.map(items=>{
+                            let i=items.children.indexOf(_this.active_data);
+                            console.log(i);
+                            if(i<(items.children.length-1)&&i!=-1){
+                                _this.detail_init(items.children[i+1]);
+                                _this.call_state=5;
+                                if(_this.call_auto=='true'){
+                                    _this.call_timer=setTimeout(function(){
+                                        _this.startCall();
+                                    },_this.call_during*1000)
+                                }
+                            }
+                        })
+                        this.DialPlanIntroWithPage_data.map(items=>{
+                            let i=items.children.indexOf(_this.active_data);
+                            console.log(i);
+                            if(i<items.children.length-1&&i!=-1){
+                                _this.detail_init(items.children[i+1]);
+                                _this.call_state=5;
+                                if(_this.call_auto=='true'){
+                                    _this.call_timer=setTimeout(function(){
+                                        _this.startCall();
+                                    },_this.call_during*1000)
+                                }
+                            }
+                        })
+                    }
+                });
             }
-            var _this=this;
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/updateCallTag',data
-            ).then( res=>{
-                if(res.data.code!=200){
-                    alert(res.data.message);
-                }else{
-                    console.log('提交小结',this.active_data);
-                    _this.call_state=0;
-                    this.TaskBySeat_data.map(items=>{
-                        let i=items.children.indexOf(_this.active_data);
-                        if(i<items.children.length-1&&i!=-1){
-                            _this.detail_init(items.children[i+1]);
-                            _this.call_state=5;
-                            if(_this.call_auto=='true'){
-                                _this.call_timer=setTimeout(function(){
-                                    _this.startCall();
-                                },_this.call_during*1000)
-                            }
-                        }
-                    })
-                    this.DialPlanIntroWithPage_data.map(items=>{
-                        let i=items.children.indexOf(_this.active_data);
-                        console.log(i);
-                        if(i<items.children.length-1&&i!=-1){
-                            _this.detail_init(items.children[i+1]);
-                            _this.call_state=5;
-                            if(_this.call_auto=='true'){
-                                _this.call_timer=setTimeout(function(){
-                                    _this.startCall();
-                                },_this.call_during*1000)
-                            }
-                        }
-                    })
-                }
-            });
         },
         online_change(){
-            if(this.online_state==1){
-                workbench.ua.unregister({
+            if(this.online_state==0){
+                this.online_state=0.5;
+                this.ua.unregister({
                     all: true
                 });
-                this.online_state==0;
             }else{
-                workbench.ua.register();
-                this.online_state==1;
+                this.online_state=0.5;
+                this.ua.register();
             }
         },
         startCall(){
@@ -1170,19 +1204,24 @@ export default {
                 if(_this.call_state == 0){
                     console.log("正在呼叫。。。");
                     //_this.call_state=0.5;
+                    _this.call_state=1;
                     var data={"taskClientId":_this.left.taskClientId,"taskListId":_this.left.taskListId,"from":_this.from_name,'taskId':_this.left.taskId};
                     for(let key in data){
                         if(data[key]==null){
                             delete data[key];
                         }
                     }
-                    _this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/seatDirectCall',data)
+                    _this.$ajax.post(_this.$preix+'/new/seatWorkbench/seatDirectCall',data)
                     .then( (res) => {
                         console.log(res.data);
                         if(res.data.code == 200){
-                            _this.call_state=1;
                             _this.callIccSessionId = res.data.info.sessionId;
-                            console.log(_this.callIccSessionId);
+                            setTimeout(function(){
+                                if(_this.call_state==1){
+                                    alert('通话异常，已为你重置本次通话');
+                                    _this.call_state=0;
+                                }
+                            },8000)
                         }else{
                             console.log("退回开始呼叫");
                             _this.call_state=0;

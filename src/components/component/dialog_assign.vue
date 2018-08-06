@@ -1,6 +1,7 @@
 <template>
     <div>
       <el-dialog title="分配客户" :visible.sync="assign" @close="close" center>
+        <el-alert title="分配的客户数量不应大于未分配客户总量" type="error" :show-icon="toast" class="toast"></el-alert>
         <div :style="{'text-align':'left'}">未分配客户总量：{{totals}}人</div>
         <div class="tit">
             <p>坐席</p>
@@ -21,16 +22,12 @@
             </ul>
             <ul> 
                 <li v-for="(item, index) in workernum" :key="item.key" v-if="index<show_num" :style="{'margin':'4% 10% 4% 0'}">
-                    <!-- <el-input
-                        placeholder="请输入分配客户数量"
-                        v-model="workernum[index]" size="mini" type="number">
-                    </el-input> -->
                     <input type="text" v-model="workernum[index]" placeholder="请输入分配客户数量" class="num" v-on:keyup="regnum">
                     <i class="el-icon-delete" @click="remove(index)"></i>
                 </li>
             </ul>
             <div :style="{'float':'left','padding-left':'3%'}">
-                <el-button type="text" size="mini" @click="add"><i class="el-icon-plus"></i>新增一行</el-button>
+                <el-button type="text" size="mini" @click="add" v-show="worker.length>show_num"><i class="el-icon-plus"></i>新增一行</el-button>
             </div>
             <div :style="{'float':'right','padding-right':'3%'}">
                 <el-button type="text" size="mini" @click="average">平均分配剩余客户</el-button>
@@ -44,6 +41,13 @@
     </div>
 </template>
 <style scoped>
+    .toast{
+        position: absolute;
+        top: -60px;
+        left: 12.5%;
+        width: 75%;
+        opacity: 0.8;
+    }
     .num{
         height: 28px;
         line-height: 28px;
@@ -139,7 +143,8 @@ export default {
             workerlist:[],
             workernum:[],
             show_num:3,
-            worker:[]
+            worker:[],
+            toast:false
         }
     },
     props:['assign','total','taskId'],
@@ -188,7 +193,12 @@ export default {
             if(e.target.value.length==1){
                 e.target.value=e.target.value.replace(/0/gi,"")
             }
-            e.target.value=e.target.value.replace(/\D/gi,"")
+            e.target.value=e.target.value.replace(/\D/gi,"");
+            if(e.target.value>this.totals){
+                this.toast=true;
+            }else{
+                this.toast=false;
+            }
         },
         save(){
             var allocateInfos=[];
@@ -198,22 +208,24 @@ export default {
                 }
             })
             var data={'taskId':this.taskId,'allocateType':1,allocateInfos};
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/allocateCallTask',data)
+            this.$ajax.post(this.$preix+'/new/calltask/allocateCallTask',data)
             .then( (res) => {
                 if(res.data.code==200){
                     //this.worker=res.data.rows;
                     this.assign=false;
+                    this.reload();
                 }
             })
         }
     },
+    inject:['reload'],
     computed:{
         totals:function(){
             return this.total;
         }
     },
     mounted:function(){
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/account/findSeatList',{'state':1})
+        this.$ajax.post(this.$preix+'/new/account/findSeatList',{'state':1})
         .then( (res) => {
             if(res.data.code==200){
                 this.worker=res.data.rows;

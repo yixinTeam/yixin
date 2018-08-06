@@ -15,6 +15,10 @@ import staff_stage from '@/components/page_staff/staff_stage'
 import staff_follow from '@/components/page_staff/staff_mission_follow'
 import staff_detail from '@/components/page_staff/staff_mission_detail'
 import staff_call_count from '@/components/page_staff/staff_call_count'
+import operation from '@/components/page_operation/operation'
+import operation_manager from '@/components/page_operation/operation_manager'
+import operation_staff from '@/components/page_operation/operation_staff'
+
 import test from '@/components/test'
 Vue.use(Router)
 
@@ -46,6 +50,13 @@ export default new Router({
       {path:'follow',component:staff_follow},
       {path:'detail',component:staff_detail},
       {path:'call_count',component:staff_call_count}
+    ]
+  }, {
+    path: '/operation',
+    component: operation,
+    children:[
+      {path:'manager',component:operation_manager},
+      {path:'staff',component:operation_staff}
     ]
   }, {
     path: '/test',

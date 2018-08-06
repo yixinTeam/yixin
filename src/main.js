@@ -8,9 +8,12 @@ import router from './router/router.js';
 import axios from 'axios';
 import '../static/css/commen.css';
 import VueClipboard from 'vue-clipboard2';
+
 Vue.config.debug = true;
 Vue.config.productionTip = false;
 axios.defaults.withCredentials = true;
+Vue.prototype.$preix = 'https://10.240.80.72:8443/icc-interface';
+// Vue.prototype.$preix = '/icc-interface';
 Vue.prototype.$ajax = axios;
 Vue.use(ElementUI);
 Vue.use(VueClipboard);

@@ -1,5 +1,6 @@
 <template>
     <div class="container">
+        <div class="nav">外呼任务跟踪</div>
         <div class="part1">
             <div class="part1_show">
                 <div class="svg"></div>
@@ -9,10 +10,9 @@
             </div>
             <div class="part1_nav">
                 <p class="grey">选择展示任务</p>
-                <el-checkbox-group v-model="checkedlist" :min="0" :max="4" class="ul" :style="{'text-align':'left','padding':'0 8px'}">
-                    <el-checkbox v-for="item in position" :label="item.taskId" :key="item.taskId" class="li">{{item.taskName}}</el-checkbox>
+                <el-checkbox-group v-model="checkedlist" :min="0" :max="4" class="ul" :style="{'text-align':'left','padding':'0 8px','background-color':'#FBFBFB'}" @change="show_mission">
+                    <el-checkbox v-for="(item,index) in position" :label="item.taskId" :key="item.taskId" class="li" :checked="index<4">{{item.taskName}}</el-checkbox>
                 </el-checkbox-group>
-                <el-button type="info" plain class="part1_button" @click="show_mission">确定</el-button>
             </div>
         </div>
         <div class="part2">
@@ -22,13 +22,13 @@
                     prefix-icon="el-icon-search"
                     v-model="search" class="search" size="mini">
                 </el-input>
-                <el-button type="info" class="button" :style="{float:'left'}" @click="missoin_search">搜索</el-button>
+                <el-button type="primary" class="button" :style="{float:'left'}" @click="missoin_search">搜索</el-button>
                 <el-button type="info" plain class="button">导出当前结果</el-button>
-                <el-button type="info"  class="button" @click="lead_in">导入客户</el-button>
-                <Dialog v-bind:leading="leading" @reset="reset"></Dialog>
+                <el-button type="primary"  class="button" @click="lead_in">导入客户</el-button>
+                <Dialog v-bind:leading="leading" @reset="reset" :data="lead_data"></Dialog>
             </div>
             <div class="zhankai" v-if="search_state==false">
-                <el-button type="info" plain class="button" @click="search_change(true)">收起</el-button>
+                <el-button type="primary" class="button" @click="search_change(true)">收起</el-button>
                 <div>
                     <p class="grey">可见状态</p>
                     <p class="black" :class="{see_active:see_state=='1'}" @click="see_change('1')">所有人可见</p>
@@ -36,12 +36,12 @@
                 </div>
                 <div>
                     <p class="grey">创建时间</p>
-                    <el-date-picker v-model="search_date" type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" size="mini"  prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
+                    <el-date-picker v-model="search_date" @change="date_change" type="daterange" range-separator="-" start-placeholder="开始日期" end-placeholder="结束日期" size="mini"  prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </div>
             </div>
             <div class="zhankai" v-if="search_state">
-                <el-button type="info" plain class="button" @click="search_change(false)">展开</el-button>
+                <el-button type="primary" plain class="button" @click="search_change(false)">展开</el-button>
                 <div>
                     <p class="grey">筛选条件</p>
                     <el-tag type="info" class="tag">{{see_state=='0'?'所有人可见':'仅管理员可见'}}</el-tag>
@@ -57,7 +57,7 @@
                         </router-link>
                     </template>
                 </el-table-column>
-                <el-table-column prop="numberTotal" label="总客户" class-name="line2" sortable='custom'  :show-overflow-tooltip=true> </el-table-column>
+                <el-table-column prop="numberTotal" label="总客户" class-name="line2" sortable='custom'  :show-overflow-tooltip=true min-width="80"> </el-table-column>
                 <el-table-column label="已分配" class-name="line3" :show-overflow-tooltip=true >
                     <template slot-scope="scope">
                         {{scope.row.numberTotal-scope.row.unallocatedNum}}
@@ -82,7 +82,7 @@
                     <template slot-scope="scope">
                         <el-button
                         size="mini" type="text"
-                        @click="handlefp(scope.$index, scope.row)">分配客户</el-button>&#12288;|
+                        @click="handlefp(scope.$index, scope.row)" :disabled="scope.row.unallocatedNum==0">分配客户</el-button>&#12288;|
                         <el-button
                         size="mini"
                         type="text"
@@ -97,27 +97,20 @@
     </div>
 </template>
 <style scoped>
-    ul{
-        padding: 0;
-        overflow: hidden;
-    }
-    li{
-        list-style: none;
-    }
-    .grey{
-        color: #999;
-        font-size: 12px;
-    }
-    .black{
-        color: #444;
-        font-size: 12px;
+    .nav{
+        line-height: 30px;
+        text-align: left;
+        background-color: #fff;
+        padding: 0 10px;
+        margin-bottom: 10px;
+        box-sizing: border-box;
     }
     .part1{
-        padding-left: 3vw;
+        padding:17px 30px 10px;
         border-bottom: 1px solid #eee;
         overflow: hidden;
     }
-    .part1>div{
+    .part1>div{     
         float: left;
     }
     .part1_show{
@@ -137,13 +130,20 @@
     }
     .part1_nav{
         width: 20%;
-        float: left;
-        border-left: 1px solid #eee;
+        float: left; 
         box-sizing: border-box;
     }
+    .part1_nav .grey{
+        text-align:left;
+        padding:0 8px;
+        margin: 0;
+        font-size: 14px;
+        color: #666;
+    }
     .ul{
-        height: 140px;
-        overflow-y: scroll
+        width: 150px;
+        height: 164px;
+        overflow-y: scroll;
     }
     .ul .li{
         margin: 5px 0;
@@ -166,7 +166,7 @@
     border-radius: 1px;
     }
     .part2_tit{
-        margin: 20px 0;
+        margin: 0 0 10px;
         overflow: hidden;
     }
     .search{
@@ -179,10 +179,6 @@
         padding: 6px 14px;
         font-size: 12px;
         margin: 0 14px;
-    }
-    .see_active{
-        background-color: rgba(153, 153, 153, 1);
-        color: #fff;
     }
     .tag{
         background-color: rgba(153, 153, 153, 1);
@@ -231,7 +227,8 @@ export default {
             taskId:null,
             pageNum:1,
             orderWay:null,
-            orderField:null
+            orderField:null,
+            lead_data:null
         }
     },
     components:{
@@ -270,14 +267,6 @@ export default {
                             normal: {
                                 show: false,
                                 position: 'center'
-                            },
-                            emphasis: {
-                                show: true,
-                                textStyle: {
-                                    fontSize: 12,
-                                    fontWeight: 'bold'
-                                },
-                                formatter: "{b}({d}%)"
                             }
                         },
                         labelLine: {
@@ -306,12 +295,17 @@ export default {
         },
         see_change:function(value){
             this.see_state=value;
+            this.missoin_search();
+        },
+        date_change(){
+            this.missoin_search();
         },
         search_change:function(value){
             this.search_state=value;
         },
         //打开导入客户弹窗
         lead_in:function(){
+            this.lead_data=null;
             this.leading = true;
             this.assign=false;
         },
@@ -322,8 +316,12 @@ export default {
             this.p_assign=row.unallocatedNum;
             this.taskId=row.id;
         },
-        handledr:function(index,row){
-            console.log(index,row)
+        //导入客户给指定任务
+        handlefr:function(index,row){
+            console.log(index,row);
+            this.lead_data=row;
+            this.leading = true;
+            this.assign=false;
         },
         //关闭弹窗
         reset:function(){
@@ -332,7 +330,7 @@ export default {
         },
         show_mission(){
             //选择展示任务
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryIndexCallTaskList',
+            this.$ajax.post(this.$preix+'/new/calltask/queryIndexCallTaskList',
                 this.checkedlist
             ).then((res)=>{
                 this.missoin_init(res.data.info);
@@ -347,7 +345,7 @@ export default {
                     delete data[key];
                 }
             }
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryCallTaskList',data)
+            this.$ajax.post(this.$preix+'/new/calltask/queryCallTaskList',data)
             .then( (res) => {
                 if(res.data.code==200){
                     this.tableData=res.data.rows;
@@ -362,7 +360,7 @@ export default {
                     delete data[key];
                 }
             }
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryCallTaskList',data)
+            this.$ajax.post(this.$preix+'/new/calltask/queryCallTaskList',data)
             .then( (res) => {
                 if(res.data.code==200){
                     this.tableData=res.data.rows;
@@ -383,35 +381,29 @@ export default {
                     delete data[key];
                 }
             }
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryCallTaskList',data)
+            this.$ajax.post(this.$preix+'/new/calltask/queryCallTaskList',data)
             .then( (res) => {
                 this.tableData=res.data.rows;
             })
         }
     },
     mounted:function(){
-        var data={
-            'name':'wshqy','password':'123456','password2':'123456'
-        };
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
-            data
-        );
         //左侧饼图数据
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryIndexCallTaskList')
+        this.$ajax.post(this.$preix+'/new/calltask/queryIndexCallTaskList')
         .then( (res) => {
             if(res.data.code==200){
                 this.missoin_init(res.data.info);
             }
         });
         //右侧任务多选列表
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryRightCallTaskList')
+        this.$ajax.post(this.$preix+'/new/calltask/queryRightCallTaskList')
         .then( (res) => {
             if(res.data.code==200){
                 this.position=res.data.rows;
             }
         });
         //下方任务列表
-        this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryCallTaskList',{requireTotalCount:true})
+        this.$ajax.post(this.$preix+'/new/calltask/queryCallTaskList',{requireTotalCount:true})
         .then( (res) => {
             if(res.data.code==200){
                 this.page_count=res.data.totalCount;

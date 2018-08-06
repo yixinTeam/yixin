@@ -2,48 +2,46 @@
   <el-container>
     <el-header>
       <el-row height="auto" class="header">
-        <el-col :span="6"><div class="grid-content bg-purple-dark title"><i class="el-icon-menu"></i>猎客呼叫中心</div></el-col>
-        <el-col :span="14"><div class="grid-content bg-purple-dark">&nbsp; </div></el-col>
-        <el-col :span="2" class="notify">
-          <div class="grid-content bg-purple-dark">
-            <el-badge :value="notify" class="item">
-              <el-button size="small">通知</el-button>
-            </el-badge>
-          </div>
-        </el-col>
-        <el-col :span="2">
-          <div class="grid-content bg-purple-dark title">
-            <el-dropdown trigger="click">
-            <span class="el-dropdown-link">
-              {{identity.default}}<i class="el-icon-arrow-down el-icon--right"></i>
-            </span>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item v-for="item in identity.list" :key='item.key'>{{item.states}}</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-          </div>
-        </el-col>
+        <div class="nav title">猎客呼叫中心</div>
+        <div class="title nav2 drop">
+          <el-dropdown trigger="click">
+          <span class="el-dropdown-link">
+            {{identity.default}}<i class="el-icon-arrow-down el-icon--right"></i>
+          </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>张领导</el-dropdown-item>
+              <el-dropdown-item @click.native="test">
+                  登出
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+        <div class="notify nav2">
+          <el-badge :value="notify">
+            <i class="el-icon-menu"></i>
+          </el-badge>
+        </div>
       </el-row>
     </el-header>
     <el-container>
-      <el-aside :width="width">
+      <el-aside width='auto' :style="{'overflow':'hidden'}">
         <el-row class="tac">
           <el-col :span="24">
             <el-menu :collapse="isCollapse"
               class="el-menu-vertical-demo"
               @open="handleOpen"
               @close="handleClose"
-              background-color="#545c64"
+              background-color="#4B4D50"
               text-color="#fff"
               active-text-color="#ffd04b">
               <router-link :to="{path:'/staff/index'}">
-                <el-menu-item index="1">
+                <el-menu-item index="1" class="el-submenu__title">
                   <i class="el-icon-index"></i>
                   <span slot="title">首页&#12288;&#12288;&#12288;&#12288;</span>
                 </el-menu-item>
               </router-link>
               <router-link :to="{path:'/staff/stage'}">
-                <el-menu-item index="2">
+                <el-menu-item index="2" class="el-submenu__title">
                   <i class="el-icon-worker"></i>
                   <span slot="title">工作台&#12288;&#12288;&#12288;</span>
                 </el-menu-item>
@@ -55,10 +53,10 @@
                 </template>
                 <el-menu-item-group>
                   <router-link :to="{path:'/staff/follow'}">
-                    <el-menu-item index="2-1">外呼任务跟踪</el-menu-item>
+                    <el-menu-item class="item" index="2-1">外呼任务跟踪</el-menu-item>
                   </router-link>
                   <router-link :to="{path:'/staff/call_count'}">
-                    <el-menu-item index="2-2">呼叫情况统计</el-menu-item>
+                    <el-menu-item class="item" index="2-2">呼叫情况统计</el-menu-item>
                   </router-link>
                 </el-menu-item-group>
               </el-submenu>
@@ -69,10 +67,10 @@
                 </template>
                 <el-menu-item-group>
                   <router-link :to="{path:'/staff/worker'}">
-                    <el-menu-item index="4-1">账号设置</el-menu-item>
+                    <el-menu-item class="item" index="4-1">账号设置</el-menu-item>
                   </router-link>
                   <router-link :to="{path:'/staff/label'}">
-                    <el-menu-item index="4-2">线路设置</el-menu-item>
+                    <el-menu-item class="item" index="4-2">线路设置</el-menu-item>
                   </router-link>
                 </el-menu-item-group>
               </el-submenu>
@@ -88,48 +86,45 @@
   </el-container>
 </template>
 <style scoped>
+.item{
+  padding: 0!important;
+  width: 170px!important;
+  min-width: 170px;
+  text-align: center;
+}
 .el-menu-vertical-demo:not(.el-menu--collapse) {
 	width: 200px;
 	min-height: 400px;
 }
 .tac {
-	position: relative;
+  max-width: 170px;
 	height: 100vh;
-	position: absolute;
 	z-index: 2;
-	background: -webkit-repeating-linear-gradient(
-		transparent,
-		transparent 40px,
-		rgba(84, 92, 100, 1) 40px,
-		rgba(84, 92, 100, 1) 100%
-	);
-	background: -o-repeating-linear-gradient(
-		transparent,
-		transparent 40px,
-		rgba(84, 92, 100, 1) 40px,
-		rgba(84, 92, 100, 1) 100%
-	);
-	background: -moz-repeating-linear-gradient(
-		transparent,
-		transparent 40px,
-		rgba(84, 92, 100, 1) 40px,
-		rgba(84, 92, 100, 1) 100%
-	);
-	background: repeating-linear-gradient(
-		transparent,
-		transparent 40px,
-		rgba(84, 92, 100, 1) 40px,
-		rgba(84, 92, 100, 1) 100%
-	);
 }
-.header {
-	border-bottom: 1px solid rgba(84, 92, 100, 0.8);
+.header{
+  overflow: hidden;
+}
+.header .nav{
+  width: 170px;
+  float: left;
+  background-color: #7496F2;
+  color:#fff;
+  font-size: 20px;
+  padding-bottom: 1px;
+}
+.header .drop{
+  padding: 0 30px 0 18px;
+}
+.header .nav2{
+  width: auto;
+  float: right;
 }
 .title {
-	line-height: 53px;
+  line-height: 60px;
+  font-size: 18px;
 }
 .notify {
-	margin: 10px 0;
+	margin: 13.5px 0;
 }
 .hello {
 	width: 100vw;
@@ -191,13 +186,13 @@ a {
 </style>
 
 <script>
+import md5 from '../js/md5.js'
 import selec from '../component/select.vue';
 export default {
 	name: 'staff',
 	data() {
 		return {
       alive:true,
-			width: '200px',
 			notify: '3',
 			isCollapse: false,
 			identity: { list: [{ states: '坐席2333', key: '1' }, { states: '登出', key: '2' }], default: '坐席2333' },
@@ -212,23 +207,32 @@ export default {
 		},
 		close: function() {
 			this.isCollapse = true;
-			this.width = '65px';
 		},
 		open: function() {
 			this.isCollapse = false;
-			this.width = '200px';
     },
     reload(){
       this.alive=false;
       this.$nextTick(function(){
         this.alive=true;
       })
+    },
+    test(){
+      location.href=this.$preix+'/logout'
     }
 	},
 	provide(){
     return {
       reload:this.reload
     }
+  },
+  mounted(){
+    var data={
+        'name':'qy1003','password':md5.md5('qy1003'),'password2':'123456'
+    };
+    this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
+        data
+    )
   }
 };
 </script>

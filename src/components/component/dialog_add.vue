@@ -171,7 +171,8 @@ export default {
             tag_data:[],
             tags:[],
             tableData: [],
-            page_count:0
+            page_count:0,
+            pageNum:1
         }
     },
     props:['see'],
@@ -181,7 +182,7 @@ export default {
             
         },
         open(){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/tag/findTagList')
+            this.$ajax.post(this.$preix+'/new/tag/findTagList')
             .then( (res) => {
                 if(res.data.code==200){
                     for(let i=0;i<res.data.info.length;i++){
@@ -190,7 +191,7 @@ export default {
                     this.tag_data=res.data.info;
                 }
             });
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/calltask/queryTaskIntroOnWallBySeat',{'pageSize':100})
+            this.$ajax.post(this.$preix+'/new/calltask/queryTaskIntroOnWallBySeat',{'pageSize':100})
             .then( (res) => {
                 if(res.data.code==200){
                     res.data.rows.splice(0,0,{'taskName':'全部','taskId':''});
@@ -206,7 +207,7 @@ export default {
             let taskIds=this.mission_state.map((item)=>this.mission_list[item].taskId);
             let userResults=this.custom_state.map((item)=>this.custom_list[item].key);
             let callResults=this.call_state.map((item)=>this.call_list[item].key);
-            var data={'userResults':userResults,'nameOrNumber':this.search,'taskIds':taskIds,'callResults':callResults,'whetherCalledToday':this.link_list[this.link_state].key,"requireTotalCount" : true};
+            var data={'userResults':userResults,'nameOrNumber':this.search,'taskIds':taskIds,'callResults':callResults,'whetherCalledToday':this.link_list[this.link_state].key,"requireTotalCount" : true,'pageNum':this.pageNum};
             // for(let i=0;i<this.tags.length;i++){
             //     if(this.tags[i]!=null||this.tags[i]!=undefined){
             //         var str='customTag'+(i+1);
@@ -220,11 +221,10 @@ export default {
                 }
             }
             this.mission_init(data);
-            this.search_state=true;
         },
         //查询任务信息
         mission_init(data){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatWorkbench/findCallPlanList',data)
+            this.$ajax.post(this.$preix+'/new/seatWorkbench/findCallPlanList',data)
             .then( (res) => {
                 
                 if(res.data.code==200){
@@ -256,9 +256,6 @@ export default {
             }
             this.mission_init(data);
         },
-        // mission_change:function(value){
-        //     this.mission_state=value;
-        // },
         mission_change:function(value){
             if(this.mission_state.indexOf(value)==-1&&value!=0){
                 this.mission_state.push(value);
@@ -274,10 +271,11 @@ export default {
             }else if(value==0){
                 this.mission_state=[0];
             }
-            console.log(this.mission_state)
+            this.missoin_search();
         },
         search_change:function(value){
             this.search_state=value;
+            this.missoin_search();
         },
         custom_change:function(value){
             if(this.custom_state.indexOf(value)==-1&&value!=0){
@@ -294,6 +292,7 @@ export default {
             }else if(value==0){
                 this.custom_state=[0];
             }
+            this.missoin_search();
         },
         call_change:function(value){
             if(this.call_state.indexOf(value)==-1&&value!=0){
@@ -310,12 +309,14 @@ export default {
             }else if(value==0){
                 this.call_state=[0];
             }
+            this.missoin_search();
         },
         link_change:function(value){
             this.link_state=value;
+            this.missoin_search();
         },
         save(){
-            this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/seatCallTask/genSeatCallList').then(res=>{
+            this.$ajax.post(this.$preix+'/new/seatCallTask/genSeatCallList').then(res=>{
                 console.log(res);
                 if(res.data.code==200){
                     this.see=false;
