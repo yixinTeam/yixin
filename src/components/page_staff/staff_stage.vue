@@ -7,7 +7,7 @@
         </div>
         <div id="mask" v-show="call_state==5">
             <div>
-                <p><i class="el-icon-success" :style="{'font-size':'20px'}"></i>提交成功，即将自动呼叫下一位客户</p>
+                <p><i class="el-icon-success" :style="{'font-size':'20px'}"></i>提交成功，{{call_during}}秒后自动呼叫下一位客户</p>
                 <span @click="stopCall">停止自动呼叫</span>
             </div>
         </div>
@@ -124,20 +124,54 @@
                             </div>
                         </div>
                     </div>
-                    <p class="black" :style="{'font-weight':'700'}">{{name}}</p>
-                    <p class="black">{{phone}}</p>
+                    <br><br>
+                    <div class="father">
+                        <p class="black" :style="{'font-weight':'700'}">{{name}}</p>
+                        <input type="text" v-model="name" @blur="upSeat">
+                    </div>
                     
+                    <p class="black">{{phone}}</p>
                 </div>
                 <div class="mes3">
                     <div class="mes">
-                        <div class="grey">性别：<span class="black">{{sex}}</span></div>
-                        <div class="grey">职业：<span class="black">{{job}}</span></div>
-                        <div class="grey">意向：<div class="father"><span class="black">{{think?think:'待添加'}}</span><input type="text" v-model="think"></div></div>
+                        <div class="grey">性别：
+                            <div class="father">
+                                <span class="black" v-show="sex==undefined">不详</span>
+                                <span class="black" v-show="sex==0">男</span>
+                                <span class="black" v-show="sex==1">女</span>
+                                <select v-model="sex" @change="upSeat">
+                                    <option value="0">男</option>
+                                    <option value="1">女</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grey">职业：
+                            <div class="father">
+                                <span class="black">{{job?job:'&#12288;'}}</span>
+                                <input type="text" v-model="job" @blur="upSeat">
+                            </div>
+                        </div>
+                        <div class="grey">意向：
+                            <div class="father">
+                                <span class="black">{{think?think:'待添加'}}</span>
+                                <input type="text" v-model="think" @blur="upSeat">
+                            </div>
+                        </div>
                     </div>
                     <div class="mes">
-                        <div class="grey">邮箱：<span class="black">{{email}}</span></div>
+                        <div class="grey">邮箱：
+                            <div class="father">
+                                <span class="black">{{email?email:'&#12288;'}}</span>
+                                <input type="text" v-model="email" @blur="upSeat">
+                            </div>
+                        </div>
                         
-                        <div class="grey">公司：<span class="black">{{company}}</span></div>
+                        <div class="grey">公司：
+                            <div class="father">
+                                <span class="black">{{company?company:'&#12288;'}}</span>
+                                <input type="text" v-model="company" @blur="upSeat">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -347,6 +381,7 @@
         width: 33%;
         float: left;
         margin: 12px 0;
+        cursor: pointer;
     }
     .aside .foot{
         position: absolute;
@@ -407,7 +442,12 @@
         padding:0 10px;
         margin: 12px 0;
     }
-    
+    .mes2>div.father>p{
+        padding:0 10px;
+    }
+    .mes2>div.father>input{
+        transform:translateX(10px);
+    }
     #call{
         float: right;
         padding: 0 2%;
@@ -639,8 +679,10 @@ export default {
             active_data:null,
             call_set:false,
             call_during:5,
-            call_auto:'true',
-            call_timer:null
+            call_remin:5,
+            call_auto:'false',
+            call_timer:null,
+            time_error:null
         }
     },
     components:{
@@ -960,6 +1002,7 @@ export default {
             this.show=false;
             console.log(item);
             this.call_state=0;
+            this.worker_state=2;
             this.callIccSessionId=null;
             if(item.children){
                 return;
@@ -978,7 +1021,7 @@ export default {
                 if(res.data.code==200){
                     this.name=res.data.info.userName?res.data.info.userName:'';
                     this.phone=res.data.info.userNumber?res.data.info.userNumber:'';
-                    this.sex=res.data.info.userGender==0?'男':'女';
+                    this.sex=res.data.info.userGender;
                     this.job=res.data.info.userJob?res.data.info.userJob:'';
                     this.company=res.data.info.userCompany?res.data.info.userCompany:'';
                     this.email=res.data.info.userEmail?res.data.info.userEmail:'';
@@ -1135,7 +1178,7 @@ export default {
         //提交小结
         update(){
             if(this.callIccSessionId){
-                let data={'desc':this.think,'nextContactTime':this.time_next,'taskId':this.taskId,'taskClientId':this.taskClientId,'userResult':this.worker_list[this.worker_state].key,'taskListId':this.id,'sessionId':this.callIccSessionId}
+                let data={'desc':this.think,'nextContactTime':this.time_next,'taskId':this.taskId,'taskClientId':this.taskClientId,'userResult':this.worker_state,'taskListId':this.id,'sessionId':this.callIccSessionId}
                 for(let i=0;i<this.tags.length;i++){
                     if(this.tags[i]!=null||this.tags[i]!=undefined){
                         var str='customTag'+(i+1);
@@ -1154,10 +1197,11 @@ export default {
                             let i=items.children.indexOf(_this.active_data);
                             console.log(i);
                             if(i<(items.children.length-1)&&i!=-1){
-                                _this.detail_init(items.children[i+1]);
-                                _this.call_state=5;
+                                _this.detail_init(items.children[i+1],1);
                                 if(_this.call_auto=='true'){
+                                    _this.call_state=5;
                                     _this.call_timer=setTimeout(function(){
+                                        _this.call_state=0;
                                         _this.startCall();
                                     },_this.call_during*1000)
                                 }
@@ -1167,10 +1211,11 @@ export default {
                             let i=items.children.indexOf(_this.active_data);
                             console.log(i);
                             if(i<items.children.length-1&&i!=-1){
-                                _this.detail_init(items.children[i+1]);
-                                _this.call_state=5;
+                                _this.detail_init(items.children[i+1],2);
                                 if(_this.call_auto=='true'){
+                                    _this.call_state=5;
                                     _this.call_timer=setTimeout(function(){
+                                        _this.call_state=0;
                                         _this.startCall();
                                     },_this.call_during*1000)
                                 }
@@ -1193,6 +1238,7 @@ export default {
         },
         startCall(){
             var _this=this;
+            clearTimeout(this.time_error);
             //mask
             console.log(this.left);
             //开始拨号
@@ -1216,7 +1262,7 @@ export default {
                         console.log(res.data);
                         if(res.data.code == 200){
                             _this.callIccSessionId = res.data.info.sessionId;
-                            setTimeout(function(){
+                            _this.call_error=setTimeout(function(){
                                 if(_this.call_state==1){
                                     alert('通话异常，已为你重置本次通话');
                                     _this.call_state=0;
@@ -1239,6 +1285,15 @@ export default {
             this.call_state=0;
             clearTimeout(this.call_timer);
             this.call_auto='false';
+        },
+        //修改基本信息
+        upSeat(){
+            var data={"desc" : this.think,"id" : this.left.taskClientId,"userCompany" : this.company,"userEmail" : this.email,"userGender" : this.sex,"userJob" : this.job,"userName" : this.name}
+            this.$ajax.post(this.$preix+'/new/seatWorkbench/updateCallTaskClient',data).then(res=>{
+                if(res.data.code==200){
+                    console.log(res);
+                }
+            })
         }
     },
     inject:['reload']

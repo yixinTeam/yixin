@@ -57,7 +57,7 @@
                         </router-link>
                     </template>
                 </el-table-column>
-                <el-table-column prop="numberTotal" label="总客户" class-name="line2" sortable='custom'  :show-overflow-tooltip=true min-width="80"> </el-table-column>
+                <el-table-column prop="numberTotal" label="总客户" class-name="line2" sortable='custom'  :show-overflow-tooltip=true min-width="85"> </el-table-column>
                 <el-table-column label="已分配" class-name="line3" :show-overflow-tooltip=true >
                     <template slot-scope="scope">
                         {{scope.row.numberTotal-scope.row.unallocatedNum}}
@@ -69,7 +69,7 @@
                 <el-table-column prop="processingNum" label="跟进" class-name="line7" sortable='custom' :show-overflow-tooltip=true> </el-table-column>
                 <el-table-column prop="tags" label="关联客户标签" class-name="line8" :show-overflow-tooltip=true min-width="150">
                     <template slot-scope="scope">
-                        <span v-for="(item,index) in scope.row.tags" :key="index">{{item}};</span>
+                        <span v-for="(item,index) in scope.row.tags" :key="index" v-if="item.linked">{{item.tagName}};</span>
                     </template>
                 </el-table-column>
                 <el-table-column prop="create" label="创建时间" class-name="line9" :show-overflow-tooltip=true min-width="120"> </el-table-column>
@@ -403,7 +403,7 @@ export default {
             }
         });
         //下方任务列表
-        this.$ajax.post(this.$preix+'/new/calltask/queryCallTaskList',{requireTotalCount:true})
+        this.$ajax.post(this.$preix+'/new/calltask/queryCallTaskList',{requireTotalCount:true,"orderField":'creat',"orderWay":'desc'})
         .then( (res) => {
             if(res.data.code==200){
                 this.page_count=res.data.totalCount;

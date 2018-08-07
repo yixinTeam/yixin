@@ -302,7 +302,7 @@ export default {
         Dialog
     },
     mounted:function(){
-        this.seat_init({requireTotalCount:true});
+        this.seat_init({requireTotalCount:true,"orderField":'creat',"orderWay":'desc'});
     },
     inject:['reload']
 }

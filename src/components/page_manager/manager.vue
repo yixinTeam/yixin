@@ -213,7 +213,7 @@ export default {
   },
   mounted(){
     var data={
-      'name':'wshqy','password':md5.md5('123456'),'password2':'123456'
+      'name':'qy1','password':md5.md5('123456'),'password2':'123456'
     };
     this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
       data

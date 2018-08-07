@@ -303,7 +303,7 @@ export default {
                         }
                     }
                     this.tableData=res.data.rows;
-                    if(res.data.totalCount){
+                    if(res.data.totalCount!=-1){
                         this.page_count=res.data.totalCount;
                     }
                 }

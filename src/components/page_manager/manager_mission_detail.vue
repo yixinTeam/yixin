@@ -218,7 +218,7 @@
         padding-right: 18px;
     }
     #history{
-        position: absolute;
+        position: fixed;
         right: 0;
         top: 0;
         background-color: #fff;
@@ -323,7 +323,7 @@ export default {
         },
         //打开历史记录
         handlexx:function(index,row){
-            this.$ajax.post(this.$preix+'/new/seatWorkbench/queryResultHistoryEntity',{'taskId':row.taskId,'taskClientId':row.taskClientId}
+            this.$ajax.post(this.$preix+'/new/seatWorkbench/queryResultHistoryEntity',{'taskID':row.taskId,'taskClientId':row.taskClientId}
             ).then( res=>{
                 if(res.status==200){
                     this.show = true;
@@ -359,7 +359,7 @@ export default {
                         }
                     }
                     this.tableData=res.data.rows;
-                    if(res.data.totalCount){
+                    if(res.data.totalCount!=-1){
                         this.page_count=res.data.totalCount;
                     }
                 }

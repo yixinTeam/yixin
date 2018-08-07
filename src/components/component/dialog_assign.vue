@@ -1,7 +1,8 @@
 <template>
     <div>
-      <el-dialog title="分配客户" :visible.sync="assign" @close="close" center>
-        <el-alert title="分配的客户数量不应大于未分配客户总量" type="error" :show-icon="toast" class="toast"></el-alert>
+      <el-dialog title="分配客户" :visible.sync="assign" @close="close" center @open="open">
+        <el-alert title="输入的分配数量已大于可分配的客户总量" center type="error" :show-icon="toast" class="toast" v-show="warn"></el-alert>
+        <el-alert title="请输入分配数量" center type="error" :show-icon="toast" class="toast" v-show="warn2"></el-alert>
         <div :style="{'text-align':'left'}">未分配客户总量：{{totals}}人</div>
         <div class="tit">
             <p>坐席</p>
@@ -9,20 +10,16 @@
         </div>
         <div class="con">
             <ul> 
-                <li v-for="(item, index) in workerlist" :key="item.key" v-show="index<show_num">
+                <li v-for="(item, index) in workerlist" :key="index" v-show="index<show_num">
                     <el-select v-model="workerlist[index]" placeholder="请选择坐席" size="mini">
-                        <el-option
-                        v-for="item in worker"
-                        :key="item.id"
-                        :label="item.shortName"
-                        :value="item.id">
+                        <el-option  v-for="_item in worker" :key="_item.id" :label="_item.shortName" :value="_item.id" :disabled="workerlist.indexOf(_item.id)!=-1">
                         </el-option>
                     </el-select>
                 </li>
             </ul>
             <ul> 
                 <li v-for="(item, index) in workernum" :key="item.key" v-if="index<show_num" :style="{'margin':'4% 10% 4% 0'}">
-                    <input type="text" v-model="workernum[index]" placeholder="请输入分配客户数量" class="num" v-on:keyup="regnum">
+                    <input type="text" v-model="workernum[index]" @input="check" placeholder="请输入分配客户数量" class="num" v-on:keyup="regnum">
                     <i class="el-icon-delete" @click="remove(index)"></i>
                 </li>
             </ul>
@@ -144,7 +141,8 @@ export default {
             workernum:[],
             show_num:3,
             worker:[],
-            toast:false
+            toast:false,
+            warn2:false
         }
     },
     props:['assign','total','taskId'],
@@ -162,13 +160,11 @@ export default {
             }
         },
         remove:function(index){
-            if(this.workernum[index]==''&&this.workerlist[index]==''){
-                this.workernum.splice(index,1);
-                this.workerlist.splice(index,1);
-                this.workernum.push('');
-                this.workerlist.push('');
-                this.show_num--;
-            }
+            this.workernum.splice(index,1);
+            this.workerlist.splice(index,1);
+            this.workernum.push('');
+            this.workerlist.push('');
+            this.show_num--;
         },
         average:function(){
             var arr=[];
@@ -216,26 +212,46 @@ export default {
                     this.reload();
                 }
             })
+        },
+        open(){
+            this.$ajax.post(this.$preix+'/new/account/findSeatList',{'state':1})
+            .then( (res) => {
+                if(res.data.code==200){
+                    this.worker=res.data.rows;
+                    this.show_num=this.worker.length;
+                    for(var i=0;i<this.worker.length;i++){
+                        this.workerlist[i]=this.worker[i].id;
+                        this.workernum[i]='';
+                    }
+                }
+            })
+        },
+        check(){
+            console.log(1);
+            var result=true;
+            console.log(this.workernum)
+            for(var i=0;i<this.workernum.length;i++){
+                if(this.workernum[i]!=''){
+                    result=false;
+                }
+            }
+            this.warn2=result;
         }
     },
     inject:['reload'],
     computed:{
         totals:function(){
             return this.total;
-        }
-    },
-    mounted:function(){
-        this.$ajax.post(this.$preix+'/new/account/findSeatList',{'state':1})
-        .then( (res) => {
-            if(res.data.code==200){
-                this.worker=res.data.rows;
-                for(var i=0;i<this.worker.length;i++){
-                    this.workerlist[i]='';
-                    this.workernum[i]='';
+        },
+        warn:function(){
+            var result=false;
+            for(var i=0;i<this.workernum.length;i++){
+                if(this.workernum[i]>this.total){
+                    result=true;
                 }
             }
-        })
-        
+            return result;
+        }
     }
 }
 </script>
