@@ -46,7 +46,7 @@
                     <p class="grey">继续跟进</p>
                 </li>
                 <li>
-                    <p class="black">{{todayCompleteDto.calledNumTotal==0?0:(todayCompleteDto.successNum/todayCompleteDto.callNumTotal*100)}}%</p>
+                    <p class="black">{{todayCompleteDto.calledNumTotal==0?0:Math.ceil(todayCompleteDto.successNum/todayCompleteDto.calledNumTotal*100)}}%</p>
                     <p class="grey">成功率(成功/已呼)</p>
                 </li>
             </ul>

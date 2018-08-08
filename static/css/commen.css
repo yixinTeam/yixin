@@ -170,9 +170,9 @@ li{
   margin: 10px 10px 0;
 }
 .father>span{
-  white-space: nowrap; 
-  overflow: hidden;
-  text-overflow: ellipsis;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .father input{
   display:none;
@@ -304,4 +304,7 @@ li{
 .see_active{
   background-color: #7496F2;
   color: #fff;
+}
+.curson{
+  cursor: pointer;
 }

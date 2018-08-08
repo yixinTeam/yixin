@@ -197,7 +197,7 @@
         padding-right: 18px;
     }
     #history{
-        position: absolute;
+        position: fixed;
         right: 0;
         top: 0;
         background-color: #fff;

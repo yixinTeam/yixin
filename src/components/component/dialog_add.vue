@@ -103,7 +103,7 @@
         </div>
         <span slot="footer" class="dialog-footer">
             <el-button @click="see=false" size="small">&#12288;&#12288;取消&#12288;&#12288;</el-button>
-            <el-button type="info" @click="save" size="small">生成呼叫计划</el-button>
+            <el-button type="info" @click="save" size="small" :disabled="cansave">生成呼叫计划</el-button>
         </span>
       </el-dialog>
     </div>
@@ -166,13 +166,14 @@ export default {
             call_list:[{'key':'','value':'全部'},{'key':'0','value':'未开始'},{'key':'10','value':'正常通话'},{'key':'11','value':'转给其他坐席'},{'key':'12','value':'转值班电话'},{'key':'21','value':'没坐席接听'},{'key':'22','value':'未接通'}],
             call_state:[0],
             //全部：0；今日未联系：1；
-            link_list:[{'key':'0','value':'全部'},{'key':'1','value':'今日未联系'}],
+            link_list:[{'key':'','value':'全部'},{'key':'0','value':'今日未联系'}],
             link_state:0,
             tag_data:[],
             tags:[],
             tableData: [],
             page_count:0,
-            pageNum:1
+            pageNum:1,
+            cansave:true
         }
     },
     props:['see'],
@@ -226,8 +227,8 @@ export default {
         mission_init(data){
             this.$ajax.post(this.$preix+'/new/seatWorkbench/findCallPlanList',data)
             .then( (res) => {
-                
                 if(res.data.code==200){
+                    this.cansave=false;
                     for(let i=0;i<res.data.rows.length;i++){
                         res.data.rows[i].tagList=[];
                         for(var key in res.data.rows[i]){
@@ -240,6 +241,10 @@ export default {
                     if(res.data.totalCount){
                         this.page_count=res.data.totalCount;
                     }
+                }else if(res.data.code==500004){
+                    this.tableData=[];
+                    this.page_count=1;
+                    this.cansave=true;
                 }
             });
         },

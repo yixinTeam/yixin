@@ -6,8 +6,8 @@
             <div :style="{'width':'65px','height':'100%'}"></div>
         </div>
         <div id="mask" v-show="call_state==5">
-            <div>
-                <p><i class="el-icon-success" :style="{'font-size':'20px'}"></i>提交成功，{{call_during}}秒后自动呼叫下一位客户</p>
+            <div :style="{'font-size':'18px'}">
+                <p><i class="el-icon-success" :style="{'font-size':'20px'}"></i>提交成功，即将自动呼叫下一位客户</p>
                 <span @click="stopCall">停止自动呼叫</span>
             </div>
         </div>
@@ -40,13 +40,14 @@
                     v-model="search"  @keyup.enter.native="search_task()">
                 </el-input>
                 <ul>
-                    <li @click="TaskList_init">待呼叫</li>
-                    <li @click="BookedList_init({'requireTotalCount':true})">已预约</li>
-                    <li>来电</li>
+                    <li @click="TaskList_init" :class="{active:task_state==0}">待呼叫</li>
+                    <li @click="BookedList_init({'requireTotalCount':true,'pageSize':'300'})" :class="{active:task_state==1}">已预约</li>
+                    <li :class="{active:task_state==2}" @click="task_state=2">来电</li>
                 </ul>
             </div>
             <div class="con">
-                <el-tree :highlight-current="true" class="staff" :data="TaskBySeat_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0" @scroll.native="test($event)">
+                <p v-if="TaskBySeat_data.length==0&&DialPlanIntroWithPage_data.length==0">暂无数据</p>
+                <el-tree :highlight-current="true" class="staff" :data="TaskBySeat_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0&&TaskBySeat_data.length!=0" @scroll.native="test($event)">
                     <div class="custom-tree-node detail_init" slot-scope="{ node, data }" @click="detail_init(data,1)">
                         <!-- 呼叫结果 默认值0：未开始 10：正常通话 11：转给其他坐席 12：转值班电话 21：没坐席接听 22：未接通 -->
                         <p>{{ node.label}}</p>
@@ -99,6 +100,7 @@
                     <div id="call">
                         <div class="call_state" v-show="call_state==0" @click="startCall">
                             <i class="el-icon-phone call_icon" id="call_icon"></i>
+                            <span v-show="call_auto_init" :style="{'display':'inline-block','padding-right':'15px'}">{{call_during_copy}}秒后开始呼叫</span>
                         </div>
                         <div v-show="call_state==1">
                             <div class="call_state" :style="{'padding':'0 15px'}">
@@ -219,7 +221,7 @@
             <div class="history">
                 <div :style="{'overflow':'hidden'}">
                     <p class="black tit" :style="{'float':'left'}">历史通话记录&#12288;<span class='grey'>总联系{{history.historyDto.totalContactNum}}次，有效联系{{history.historyDto.effectiveContactNum}}次</span></p>
-                <p class="grey" :style="{'float':'right'}" @click="enter(history.summaryDto)">查看更多<i class="el-icon-d-arrow-right"></i></p>
+                <p class="grey curson" :style="{'float':'right'}" @click="enter(history.summaryDto)">查看更多<i class="el-icon-d-arrow-right"></i></p>
                 </div>
                 <p class="grey" id="talk">{{history.historyDto.details[0].callEndTime}}&#12288;&#12288;{{history.historyDto.details[0].shortName}} <span class="black">{{history.historyDto.details[0].callReaultString}}</span> {{history.historyDto.details[0].callDuration}}</p>
                 <div>
@@ -387,8 +389,12 @@
     .tit ul li{
         width: 33%;
         float: left;
-        margin: 12px 0;
+        padding: 12px 0;
         cursor: pointer;
+        box-sizing:border-box;
+    }
+    .tit ul li.active{
+        border-bottom:1px solid #7496F2;
     }
     .aside .foot{
         position: absolute;
@@ -451,6 +457,9 @@
     .mes2>div.father>p{
         padding:0 10px;
         width: 98px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .mes2>div.father>input{
         transform:translateX(10px);
@@ -708,8 +717,10 @@ export default {
             active_data:null,
             call_set:false,
             call_during:5,
-            call_remin:5,
+            call_during_copy:5,
+            call_remin:2,
             call_auto:'false',
+            call_auto_init:false,
             call_timer:null,
             time_error:null,
             call_hidden:true
@@ -1030,9 +1041,11 @@ export default {
         //获取客户详情
         detail_init(item,type){
             this.show=false;
+            this.call_auto_init=false;
             console.log(item);
             this.call_state=0;
             this.worker_state=2;
+            clearTimeout(this.call_error);
             this.callIccSessionId=null;
             if(item.children){
                 return;
@@ -1146,9 +1159,10 @@ export default {
                 return
             }
             e.preventDefault();
+            console.log($,$('.content').eq(0).offset());
             this.contextmenu.state=true;
-            this.contextmenu.left=e.clientX;
-            this.contextmenu.top=e.clientY+document.documentElement.scrollTop;
+            this.contextmenu.left=e.clientX-$('.content').eq(0).offset().left;
+            this.contextmenu.top=e.clientY+document.documentElement.scrollTop-$('.content').eq(0).offset().top;
             this.contextmenu.target=e.target;
             // if(e.target.getAttribute('class').indexOf('el-tree-node__content')!=-1){
             //     e.preventDefault();
@@ -1234,10 +1248,11 @@ export default {
                                 }
                                 if(_this.call_auto=='true'){
                                     _this.call_state=5;
+                                    _this.call_auto_init=true;
                                     _this.call_timer=setTimeout(function(){
                                         _this.call_state=0;
-                                        _this.startCall();
-                                    },_this.call_during*1000)
+                                        _this.startCallTimeOut();
+                                    },_this.call_remin*1000)
                                 }
                             }else if(i==(items.children.length-1)){
                                 _this.call_hidden=true;
@@ -1253,10 +1268,11 @@ export default {
                                 }
                                 if(_this.call_auto=='true'){
                                     _this.call_state=5;
+                                    _this.call_auto_init=true;
                                     _this.call_timer=setTimeout(function(){
                                         _this.call_state=0;
-                                        _this.startCall();
-                                    },_this.call_during*1000)
+                                        _this.startCallTimeOut();
+                                    },_this.call_remin*1000)
                                 }
                             }else if(i==(items.children.length-1)){
                                 _this.call_hidden=true;
@@ -1336,6 +1352,18 @@ export default {
                     console.log(res);
                 }
             })
+        },
+        startCallTimeOut(){
+            this.call_during_copy=parseInt(this.call_during);
+            var _this=this;
+            var timer=setInterval(function(){
+                _this.call_during_copy=_this.call_during_copy-1;
+                if(_this.call_during_copy<1){
+                    _this.startCall();
+                    _this.call_auto_init=false;
+                    clearInterval(timer);
+                }
+            },1000)
         }
     },
     inject:['reload']
