@@ -46,7 +46,7 @@
                 </ul>
             </div>
             <div class="con">
-                <el-tree class="staff" :data="TaskBySeat_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0" @scroll.native="test($event)">
+                <el-tree :highlight-current="true" class="staff" :data="TaskBySeat_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0" @scroll.native="test($event)">
                     <div class="custom-tree-node detail_init" slot-scope="{ node, data }" @click="detail_init(data,1)">
                         <!-- 呼叫结果 默认值0：未开始 10：正常通话 11：转给其他坐席 12：转值班电话 21：没坐席接听 22：未接通 -->
                         <p>{{ node.label}}</p>
@@ -59,7 +59,7 @@
                         <span>{{data.areaName}}{{data.depName}}</span>
                     </div>
                 </el-tree>
-                <el-tree class="staff" :data="DialPlanIntroWithPage_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0&&DialPlanIntroWithPage_data.length!=0">
+                <el-tree :highlight-current="true" class="staff" :data="DialPlanIntroWithPage_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0&&DialPlanIntroWithPage_data.length!=0">
                     <div class="custom-tree-node detail_init" slot-scope="{ node, data }" @click="detail_init(data,2)" @contextmenu='prevent($event,data)'>
                         <!-- 呼叫结果 默认值0：未开始 10：正常通话 11：转给其他坐席 12：转值班电话 21：没坐席接听 22：未接通 -->
                         <p>{{ node.label}}</p>
@@ -88,6 +88,12 @@
             </ul>
         </div>
         <div class="body">
+            <div id="hidden" v-show="call_hidden">
+                <div>
+                    <i class="el-icon-share" :style="{'font-size':'80px'}"></i>
+                    <p>未选择客户</p>
+                </div>
+            </div>
             <div class="head">
                 <div class="mes2">
                     <div id="call">
@@ -351,6 +357,7 @@
         overflow: hidden;
         background: #F2F4F5;
         padding:10px;
+        position: relative;
     }
     .aside{
         float: left;
@@ -402,7 +409,6 @@
     .body{
         padding-left: 25.8%;
         box-sizing: border-box;
-        
     }
     .body .head,.body .summary{
         overflow: hidden;
@@ -444,6 +450,7 @@
     }
     .mes2>div.father>p{
         padding:0 10px;
+        width: 98px;
     }
     .mes2>div.father>input{
         transform:translateX(10px);
@@ -491,6 +498,9 @@
     }
     .mes>div{
         margin:10px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .father:hover input,.father:hover select{
         width: auto;
@@ -533,6 +543,9 @@
         margin:0px 4px;
         font-size:14px;
     }
+    .state p.black{
+        cursor: pointer;
+    }
     .submit{
         padding: 8px 0;
         text-align: right;
@@ -553,6 +566,21 @@
         top: 0;
         background-color: #fff;
         box-shadow:-2px 0 5px #ccc;
+    }
+    #hidden{
+        position: absolute;
+        width:74.2%;
+        height: 100%;
+        background-color:#fff;
+        top:10px;
+        left:25.8%;
+        z-index:9;
+    }
+    #hidden>div{
+        position: absolute;
+        left:50%;
+        top:50%;
+        transform:translate3D(-50%,-50%,0)
     }
 </style>
 <style>
@@ -647,6 +675,7 @@ export default {
             history_detail:[],
             taskClientId:'',
             taskId:'',
+            partnerAccountId:null,
             id:'',
             booklist:[{
                 "areaName" : "string",
@@ -682,7 +711,8 @@ export default {
             call_remin:5,
             call_auto:'false',
             call_timer:null,
-            time_error:null
+            time_error:null,
+            call_hidden:true
         }
     },
     components:{
@@ -1007,6 +1037,7 @@ export default {
             if(item.children){
                 return;
             }
+            this.call_hidden=false;
             this.active_data=item;
             this.left.taskClientId=item.taskClientId;
             if(type==1){
@@ -1029,6 +1060,7 @@ export default {
                     this.note='';
                     this.taskClientId=item.taskClientId;
                     this.taskId=item.taskId;
+                    this.partnerAccountId=res.data.info.partnerAccountId;
                     this.id=item.id;
                 }
             });
@@ -1193,11 +1225,13 @@ export default {
                     }else{
                         console.log('提交小结',this.active_data);
                         _this.call_state=0;
-                        this.TaskBySeat_data.map(items=>{
+                        this.TaskBySeat_data.map((items,index)=>{
                             let i=items.children.indexOf(_this.active_data);
-                            console.log(i);
                             if(i<(items.children.length-1)&&i!=-1){
                                 _this.detail_init(items.children[i+1],1);
+                                if(_this.worker_state!=1){
+                                    _this.TaskBySeat_data[index].children.splice(i,1);
+                                }
                                 if(_this.call_auto=='true'){
                                     _this.call_state=5;
                                     _this.call_timer=setTimeout(function(){
@@ -1205,13 +1239,18 @@ export default {
                                         _this.startCall();
                                     },_this.call_during*1000)
                                 }
+                            }else if(i==(items.children.length-1)){
+                                _this.call_hidden=true;
                             }
                         })
-                        this.DialPlanIntroWithPage_data.map(items=>{
+                        this.DialPlanIntroWithPage_data.map((items,index)=>{
                             let i=items.children.indexOf(_this.active_data);
-                            console.log(i);
                             if(i<items.children.length-1&&i!=-1){
                                 _this.detail_init(items.children[i+1],2);
+                                console.log(_this.DialPlanIntroWithPage_data[index].children,_this.worker_state,_this.DialPlanIntroWithPage_data[index].children[i]);
+                                if(_this.worker_state!=1){
+                                    _this.DialPlanIntroWithPage_data[index].children.splice(i,1);
+                                }
                                 if(_this.call_auto=='true'){
                                     _this.call_state=5;
                                     _this.call_timer=setTimeout(function(){
@@ -1219,6 +1258,8 @@ export default {
                                         _this.startCall();
                                     },_this.call_during*1000)
                                 }
+                            }else if(i==(items.children.length-1)){
+                                _this.call_hidden=true;
                             }
                         })
                     }
@@ -1288,7 +1329,8 @@ export default {
         },
         //修改基本信息
         upSeat(){
-            var data={"desc" : this.think,"id" : this.left.taskClientId,"userCompany" : this.company,"userEmail" : this.email,"userGender" : this.sex,"userJob" : this.job,"userName" : this.name}
+            console.log(this.partnerAccountId)
+            var data={"desc" : this.think,"id" : this.left.taskClientId,"userCompany" : this.company,"userEmail" : this.email,"userGender" : this.sex,"userJob" : this.job,"userName" : this.name,"partnerAccountId":this.partnerAccountId}
             this.$ajax.post(this.$preix+'/new/seatWorkbench/updateCallTaskClient',data).then(res=>{
                 if(res.data.code==200){
                     console.log(res);

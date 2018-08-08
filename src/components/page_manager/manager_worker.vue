@@ -61,7 +61,7 @@
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="state" label="坐席状态" class-name="line3" sortable='custom' :show-overflow-tooltip=true min-width="100">
+                <el-table-column prop="state" label="坐席状态" class-name="line3" :show-overflow-tooltip=true min-width="100">
                     <template slot-scope="scope">
                         <div class="father">
                             <p v-show="scope.row.state==1">激活中</p>

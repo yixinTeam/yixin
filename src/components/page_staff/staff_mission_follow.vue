@@ -10,8 +10,8 @@
             </div>
             <div class="part1_nav">
                 <p class="grey">选择展示任务</p>
-                <el-checkbox-group v-model="checkedlist" :min="0" :max="4" class="ul" :style="{'text-align':'left','padding':'0 8px','background-color':'#FBFBFB','overflow-x': 'hidden'}">
-                    <el-checkbox v-for="item in position" :label="item.taskId" :key="item.taskId" class="li">{{item.taskName}}</el-checkbox>
+                <el-checkbox-group v-model="checkedlist" :min="0" :max="4" class="ul" :style="{'text-align':'left','padding':'0 8px','background-color':'#FBFBFB','overflow-x': 'hidden'}" @change="show_mission">
+                    <el-checkbox v-for="(item,index) in position" :label="item.taskId" :key="item.taskId" class="li" :checked="index<4">{{item.taskName}}</el-checkbox>
                 </el-checkbox-group>
             </div>
         </div>
@@ -258,6 +258,14 @@ export default {
         },
         date_change(){
             this.missoin_search();
+        },
+        show_mission(){
+            //选择展示任务
+            this.$ajax.post(this.$preix+'/new/calltask/queryIndexCallTaskList',
+                this.checkedlist
+            ).then((res)=>{
+                this.missoin_init(res.data.info);
+            })
         },
         //关闭弹窗
         reset:function(){

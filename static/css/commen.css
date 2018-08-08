@@ -169,6 +169,11 @@ li{
   font-size: 12px;
   margin: 10px 10px 0;
 }
+.father>span{
+  white-space: nowrap; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .father input{
   display:none;
   font-size: 12px;
@@ -266,9 +271,12 @@ li{
 }
 .el-submenu__title{
   text-align: left;
-  padding: 0 10px!important;
+  padding: 0 15px!important;
   width: 170px;
   box-sizing: border-box;
+}
+.el-submenu__title>div{
+  padding: 0 15px!important;
 }
 .el-aside{
   background-color: #4B4D50;
