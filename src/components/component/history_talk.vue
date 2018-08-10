@@ -25,11 +25,11 @@
                         <p class="grey" v-if="item.userResultStr">客户状态&#12288;<span class="black">{{item.userResultStr}}</span></p>
                         <p class="grey" :style="{'float':'right'}">下次联系时间&#12288;<span class="black">{{item.nextContactTime?item.nextContactTime:'无'}}</span></p>
                         <p class="grey" v-if="item.desc">详情备注&#12288;<span class="black">{{item.desc}}</span></p>
-                        <el-button type="info" size="mini" v-for="(_item,index) in taglist" :key="index">{{_item}}</el-button>
-                        <p class="grey" :style="{'width':'100%'}">通话录音&#12288;
+                        <el-button type="info" size="mini" v-for="(_item,index) in item.taglist" :key="index">{{_item}}</el-button>
+                        <p class="grey" :style="{'width':'100%'}" v-if="item.recordFilePath">通话录音&#12288;
                             <audio controls>
-                            <source src="/statics/demosource/horse.ogg" type="audio/ogg">
-                            <source src="/statics/demosource/horse.mp3" type="audio/mpeg">
+                            <source :src="baseUrl+item.recordFilePath+'?callSessionId='+item.callSeesionId+'&sessionId='+session" type="audio/ogg">
+                            <source :src="baseUrl+item.recordFilePath+'?callSessionId='+item.callSeesionId+'&sessionId='+session" type="audio/mpeg">
                             您的浏览器不支持 audio 元素。
                             </audio>
                         </p>
@@ -166,7 +166,9 @@ export default {
             job:'设计师',
             company:'网易(杭州)网络有限公司',
             email:'hzfuwenjuan@corp.nete',
-            think:'待添加'
+            think:'待添加',
+            baseUrl:null,
+            session:null
         }
     },
     props:['head','details'],
@@ -174,6 +176,14 @@ export default {
         close(){
             this.$emit('close')
         }
+    },
+    mounted(){
+        this.$ajax.post(this.$preix+'/new/callstatistics/getIccStaticContextPath').then(res=>{
+            if(res.data.code){
+                this.baseUrl=res.data.info.iccStaticContextPath;
+                this.session=res.data.info.sessionId;
+            }
+        })
     }
 }
 </script>

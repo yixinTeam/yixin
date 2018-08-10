@@ -98,9 +98,13 @@ export default {
         }
     },
     mounted(){
-        let aplayer = this.$refs.player.control;
+        // let aplayer = this.$refs.player.control;
 
-        aplayer.play();
+        // aplayer.play();
+        var a=[1];
+        var b=[2];
+        b=b.concat(a);
+        console.log(b);
     }
 }
 </script>

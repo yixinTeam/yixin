@@ -57,7 +57,7 @@
                         <span>{{data.callResult==11?'被转移':''}}</span>
                         <span>{{data.callResult==21?'未接听':''}}</span>
                         <span>{{data.callResult==22?'未接通':''}}</span>
-                        <span>{{data.areaName}}{{data.depName}}</span>
+                        <span>{{data.depName}}{{data.areaName}}</span>
                     </div>
                 </el-tree>
                 <el-tree :highlight-current="true" class="staff" :data="DialPlanIntroWithPage_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0&&DialPlanIntroWithPage_data.length!=0" ref="tree" node-key="id">
@@ -70,14 +70,14 @@
                         <span>{{data.callResult==11?'被转移':''}}</span>
                         <span>{{data.callResult==21?'未接听':''}}</span>
                         <span>{{data.callResult==22?'未接通':''}}</span>
-                        <span>{{data.areaName}}{{data.depName}}</span>
+                        <span>{{data.depName}}{{data.areaName}}</span>
                     </div>
                 </el-tree>
                 <div class="custom-tree-node node" v-show="task_state==1" v-for="(item,index) in booklist" :key="index" @click="detail_init(item,1)">
                     <p>{{item.userName}}</p>
                     <span>{{item.lastCalledTime}}</span>
                     <span>{{item.nextContactTime}}</span>
-                    <span>{{item.areaName}}{{item.depName}}</span>
+                    <span>{{item.depName}}{{item.areaName}}</span>
                 </div>
             </div>
             <ul class="foot" @click="see=true">
@@ -496,6 +496,7 @@
     }
     .node{
         padding:10px;
+        cursor: pointer;
     }
     .mes{
         overflow: hidden;
@@ -1206,7 +1207,16 @@ export default {
             this.$ajax.post(this.$preix+'/new/seatWorkbench/queryResultHistoryEntity',{'taskId':item.taskId,'taskClientId':item.taskClientId}
             ).then( res=>{
                 if(res.status==200){
+                    res.data.info.details.map(item=>{
+                        item.taglist=[];
+                        for(var i=0;i<item.tags.length;i++){
+                            if(item.tags[i].lastTagValue!=undefined){
+                                item.taglist=item.taglist.concat(item.tags[i].lastTagValue.split(';'));
+                            }
+                        }
+                    })
                     this.history_detail=res.data.info.details;
+                    console.log(res.data.info.details);
                 }
             });
         },
@@ -1238,7 +1248,7 @@ export default {
                                 if(_this.worker_state!='1'){
                                     _this.TaskBySeat_data[index].children.splice(i,1);
                                 }
-                                _this.detail_init(items.children[i+1],1);
+                                _this.detail_init(items.children[i],1);
                                 console.log(items.children[i+1],items.children[i+1].id)
                                 _this.$refs.tree.setCheckedKeys([items.children[i+1].id]);
                                 if(_this.call_auto=='true'){
@@ -1251,6 +1261,7 @@ export default {
                                 }
                             }else if(i==(items.children.length-1)){
                                 _this.call_hidden=true;
+                                _this.TaskBySeat_data.splice(index,1);
                             }
                         })
                         this.DialPlanIntroWithPage_data.map((items,index)=>{
@@ -1259,7 +1270,7 @@ export default {
                                 if(_this.worker_state!='1'){
                                     _this.DialPlanIntroWithPage_data[index].children.splice(i,1);
                                 }
-                                _this.detail_init(items.children[i+1],2);
+                                _this.detail_init(items.children[i],2);
                                 console.log(items.children[i+1],items.children[i+1].id)
                                 _this.$refs.tree.setCheckedKeys([items.children[i+1].id]);
                                 if(_this.call_auto=='true'){
@@ -1272,8 +1283,17 @@ export default {
                                 }
                             }else if(i==(items.children.length-1)){
                                 _this.call_hidden=true;
+                                _this.DialPlanIntroWithPage_data.splice(index,1);
                             }
-                        })
+                        });
+                        this.booklist.map((items,index)=>{
+                            if(items==_this.active_data){
+                                _this.booklist.splice(index,1);
+                                _this.detail_init(_this.booklist[index],2);
+                            }else if(index==(_this.booklist.length-1)){
+                                _this.call_hidden=true;
+                            }
+                        });
                     }
                 });
             }

@@ -149,6 +149,12 @@
                   if(res.data.code==200){
                     this.data_complete=res.data.message;
                     this.leading_complete=1;
+                  }else{
+                    this.$message({
+                        showClose: true,
+                        message: res.data.message,
+                        type: 'warning'
+                    });
                   }
               });
             },
