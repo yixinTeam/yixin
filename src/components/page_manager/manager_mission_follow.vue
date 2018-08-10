@@ -23,7 +23,6 @@
                     v-model="search" class="search" size="mini">
                 </el-input>
                 <el-button type="primary" class="button" :style="{float:'left'}" @click="missoin_search">搜索</el-button>
-                <el-button type="info" plain class="button">导出当前结果</el-button>
                 <el-button type="primary"  class="button" @click="lead_in">导入客户</el-button>
                 <Dialog v-bind:leading="leading" @reset="reset" :data="lead_data"></Dialog>
             </div>
@@ -69,7 +68,7 @@
                 <el-table-column prop="processingNum" label="跟进" class-name="line7" sortable='custom' :show-overflow-tooltip=true> </el-table-column>
                 <el-table-column prop="tags" label="关联客户标签" class-name="line8" :show-overflow-tooltip=true min-width="150">
                     <template slot-scope="scope">
-                        <span v-for="(item,index) in scope.row.tags" :key="index" v-if="item.linked">{{item.tagName}};</span>
+                        <span v-for="(item,index) in scope.row.tags" :key="index">{{item.tagName}};</span>
                     </template>
                 </el-table-column>
                 <el-table-column prop="create" label="创建时间" class-name="line9" :show-overflow-tooltip=true min-width="120"> </el-table-column>

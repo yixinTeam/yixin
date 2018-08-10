@@ -22,6 +22,7 @@
                     <p class="grey">创建时间</p>
                     <el-date-picker
                     v-model="search_date"
+                    @change="date_change"
                     type="daterange"
                     range-separator="-"
                     start-placeholder="开始日期"
@@ -243,7 +244,7 @@ export default {
             pageNum:1,
             orderWay:null,
             orderField:null,
-            see:true,
+            see:false,
             Form: {
                 loginName: null,
                 shortName: null,
@@ -269,6 +270,10 @@ export default {
         worker_change:function(value){
             this.dialog_show=false;
             this.worker_state=value;
+            this.findSeat();
+        },
+        date_change(){
+            this.findSeat();
         },
         search_change:function(value){
             this.search_state=value;
@@ -293,11 +298,12 @@ export default {
             if(this.multipleSelection.length>0){
                 var data=[];
                 for(let i=0;i<this.multipleSelection.length;i++){
-                    data.push({'id':this.multipleSelection[i].id,'shortName':this.multipleSelection[i].shortName,'password':'reset','loginName':this.multipleSelection[i].shortName})
+                    data.push({'id':this.multipleSelection[i].id,'shortName':this.multipleSelection[i].shortName,'password':'reset','loginName':this.multipleSelection[i].loginName})
                 }
                 this.$ajax.post(this.$preix+'/new/account/batchUpdateSeat',data)
                 .then( (res) => {
                     if(res.data.code==200){
+                        console.log(res.data.info)
                         this.message=res.data.info;
                         this.dialog_type=1;
                         this.checkbox=true;
@@ -327,7 +333,7 @@ export default {
         //条件搜索
         findSeat:function(){
             var data={
-                'state':this.worker_state,'startTime':this.search_date!=null?this.search_date[0]:"",'endTime':this.search_date!=null?this.search_date[1]:"",'requireTotalCount':true,'fullNameOrEmail':this.search
+                'state':this.worker_state,'startTime':this.search_date!=null?this.search_date[0]:"",'endTime':this.search_date!=null?this.search_date[1]:"",'requireTotalCount':true,'fullNameOrEmail':this.search,'partnerAccountId':this.$route.query.partnerAccountId
             };
             for (let key in data){
                 if(data[key]==''){
@@ -340,7 +346,7 @@ export default {
         sort_change({column, prop, order} ){
             this.orderWay=order.split('ending')[0];
             this.orderField=prop;
-            var data={'state':this.worker_state,'startTime':this.search_date!=null?this.search_date[0]:"",'endTime':this.search_date!=null?this.search_date[1]:"",'requireTotalCount':true,'fullNameOrEmail':this.search,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField};
+            var data={'state':this.worker_state,'startTime':this.search_date!=null?this.search_date[0]:"",'endTime':this.search_date!=null?this.search_date[1]:"",'requireTotalCount':true,'fullNameOrEmail':this.search,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField,'partnerAccountId':this.$route.query.partnerAccountId};
             for (let key in data){
                 if(data[key]==''){
                     delete data[key];
@@ -351,7 +357,7 @@ export default {
         //页码改变
         page_change(val){
             this.pageNum=val;
-            var data={'state':this.worker_state,'startTime':this.search_date!=null?this.search_date[0]:"",'endTime':this.search_date!=null?this.search_date[1]:"",'requireTotalCount':true,'fullNameOrEmail':this.search,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField};
+            var data={'state':this.worker_state,'startTime':this.search_date!=null?this.search_date[0]:"",'endTime':this.search_date!=null?this.search_date[1]:"",'requireTotalCount':true,'fullNameOrEmail':this.search,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField,'partnerAccountId':this.$route.query.partnerAccountId};
             for (let key in data){
                 if(data[key]==''){
                     delete data[key];
@@ -415,7 +421,13 @@ export default {
         Dialog
     },
     mounted:function(){
-        this.seat_init({requireTotalCount:true});
+        var partnerAccountId=this.$route.query.partnerAccountId;
+        if(partnerAccountId){
+            this.seat_init({requireTotalCount:true,orderField:'create',orderWay:'desc',partnerAccountId:partnerAccountId});
+        }else{
+            this.seat_init({requireTotalCount:true,orderField:'create',orderWay:'desc'});
+        }
+        
     },
     inject:['reload']
 }

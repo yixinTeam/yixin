@@ -8,8 +8,8 @@
                     v-model="search" class="search" size="mini">
                 </el-input>
                 <el-button type="info" class="button" :style="{float:'left'}" @click="findSeat">搜索</el-button>
-                <el-button type="info" plain class="button">新增FS账号</el-button>
-                <el-button type="info"  class="button">新增企业</el-button>
+                <el-button type="info" plain class="button" @click="fsAdd">新增FS账号</el-button>
+                <el-button type="info"  class="button" @click="managerAdd">新增企业</el-button>
             </div>
             <div class="zhankai" v-if="search_state==false">
                 <el-button type="info" plain class="button" @click="search_change(true)">收起</el-button>
@@ -43,7 +43,13 @@
                 </div>
             </div>
             <el-table :data="tableData" style="width: 100%" @sort-change="sort_change" class="table" header-row-class-name="table_head">
-                <el-table-column prop="loginName" label="管理账号" class-name="line1" label-class-name="line1_tit" sortable='custom' :show-overflow-tooltip=true min-width="100"></el-table-column>
+                <el-table-column prop="loginName" label="管理账号" class-name="line1" label-class-name="line1_tit" sortable='custom' :show-overflow-tooltip=true min-width="100">
+                    <template slot-scope="scope">
+                        <router-link :to="{path:'/operation/staff',query:{partnerAccountId:scope.row.id}}">
+                            <span>{{scope.row.loginName}}</span>
+                        </router-link>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="fullName" label="企业名称" class-name="line2" sortable='custom' :show-overflow-tooltip=true min-width="100"></el-table-column>
                 <el-table-column prop="email" label="邮箱" class-name="line3" sortable='custom' :show-overflow-tooltip=true min-width="120">
                 </el-table-column>
@@ -59,7 +65,7 @@
                     </template>
                 </el-table-column>
                 <el-table-column prop="numOfSeat" label="坐席数量上限" class-name="line5" :show-overflow-tooltip=true  min-width="100"> </el-table-column>
-                <el-table-column prop="desc" label="备注" class-name="line6" :show-overflow-tooltip=true>
+                <el-table-column min-width="210" prop="desc" label="备注" class-name="line6" :show-overflow-tooltip=true>
                     <template slot-scope="scope">
                         <el-button
                         size="mini" type="text"
@@ -92,8 +98,8 @@
                         </el-form-item>
                         <el-form-item label="用户类型" prop="type">
                             <el-select v-model="Form.type" placeholder="请选择用户类型">
-                                <el-option label="企业管理员" value="0"></el-option>
-                                <el-option label="FS账号" value="1"></el-option>
+                                <el-option label="企业管理员" value="2"></el-option>
+                                <el-option label="运维管理员" value="1"></el-option>
                             </el-select>
                         </el-form-item>
                         <el-form-item label="坐席账号前缀" prop="seatAccountPrefix">
@@ -124,7 +130,7 @@
                             <li>
                                 <p class="black">实时资源：</p>
                                 <div class="grey charge">2000分钟
-                                    <el-button type="info" plain size="mini" id="charge" @click="charge=true">充值</el-button>
+                                    <el-button type="info" plain size="mini" id="charge" @click="charges=true">充值</el-button>
                                 </div>
                             </li>
                             <li>
@@ -151,18 +157,18 @@
                     </el-form>
                 </div>
                 <span slot="footer" class="dialog-footer">
-                    <el-button @click="resetForm('Form')">&#12288;重置&#12288;</el-button>
+                    <el-button @click="resetForm('Form')" v-show="detail_type!=0">&#12288;重置&#12288;</el-button>
                     <el-button type="info" @click="submitForm('Form')">&#12288;提交&#12288;</el-button>
                 </span>
             </el-dialog>
-            <el-dialog title="充值" :visible.sync="charge" width="30%" center>
+            <el-dialog title="充值" :visible.sync="charges" width="30%" center>
                 <div>
                     <el-input v-model="charge_num" size="mini">
                         <template slot="prepend">输入你要充值的数量</template>
                     </el-input>
                 </div>
                 <span slot="footer" class="dialog-footer">
-                    <el-button @click="charge = false">取 消</el-button>
+                    <el-button @click="charges = false">取 消</el-button>
                     <el-button type="info" @click="charge">充 值</el-button>
                 </span>
             </el-dialog>
@@ -269,7 +275,7 @@ export default {
             orderField:null,
             see:false,
             detail_type:0,
-            charge:false,
+            charges:false,
             charge_num:null,
             Form: {
                 loginName: null,
@@ -310,9 +316,9 @@ export default {
                 email: [
                     { type: 'email', required: false, message: '请输入正确的邮箱地址', trigger: 'blur' }
                 ],
-                phone: [
-                    { type: 'number',min: 11, max: 11, required: false, message: '请输入正确的手机号', trigger: 'blur' }
-                ],
+                // phone: [
+                //     { type: 'number',min: 9, max: 12, required: false, message: '请输入正确的手机号', trigger: 'blur' }
+                // ],
                 callCredit: [
                     { type: 'number', required: false, message: '请输入正确的信用资源', trigger: 'blur' }
                 ]
@@ -322,12 +328,15 @@ export default {
     methods:{
         worker_change:function(value){
             this.worker_state=value;
+            this.findSeat();
         },
         search_change:function(value){
             this.search_state=value;
+            this.findSeat();
         },
         close(){
             this.dialog_show=false;
+            this.findSeat();
         },
         manager_init(data){
             this.$ajax.post(this.$preix+'/new/account/findAdminList',data)
@@ -374,25 +383,54 @@ export default {
             this.manager_init(data);
         },
         handleDetail(index,row){
+            this.$ajax.post(this.$preix+'/new/account/accountDetailView',{'id':row.id}).then(res=>{
+                if(res.data.code==200){
+                    this.Form=res.data.info;
+                }
+            })
             this.see=true;
             this.detail_type=0;
         },
         handlereset(index,row){
-            // this.message=[];
-            // this.$ajax.post(this.$preix+'/new/account//new/account/resetPasswordt',[{'id':row.id,'password':'reset','shortName':row.shortName,'loginName':row.loginName}])
-            // .then( (res) => {
-            //     this.message=res.data.info;
-            //     this.dialog_type=1;
-            //     this.checkbox=false;
-            //     this.dialog_show=true;
-            // })
+            this.message=[];
+            this.$ajax.post(this.$preix+'/new/account/resetPassword',{'id':row.id})
+            .then( (res) => {
+                this.message=res.data.info;
+                this.dialog_type=1;
+                this.checkbox=false;
+                this.dialog_show=true;
+            })
         },
         handleAdd(index,row){
+            this.$ajax.post(this.$preix+'/new/account/createSeatList',{'id':row.id})
+            .then( (res) => {
+                if(res.data.code==200){
+                    this.$message({
+                        showClose: true,
+                        message: '生成成功',
+                        type: 'success'
+                    });
+                }
+            })
+        },
+        managerAdd(){
             for(let key in this.Form){
                 this.Form[key]=null;
             }
             this.see=true;
             this.detail_type=1;
+        },
+        fsAdd(){
+            this.$ajax.post(this.$preix+'/account/createSeatList')
+            .then( (res) => {
+                if(res.data.code==200){
+                    this.$message({
+                        showClose: true,
+                        message: '添加成功',
+                        type: 'success'
+                    });
+                }
+            })
         },
         resetForm(formName){
             this.$refs[formName].resetFields();
@@ -412,6 +450,8 @@ export default {
                     .then( (res) => {
                         if(res.data.code==200){
                             _this.reload()
+                        }else{
+                            alert(res.data.message)
                         }
                     })
                 } else {
@@ -425,7 +465,7 @@ export default {
             this.$ajax.post(this.$preix+'/new/account/updateCompanyCallRemaining')
             .then( (res) => {
                 if(res.data.code==200){
-                    this.charge=false;
+                    this.charges=false;
                 }
             })
             

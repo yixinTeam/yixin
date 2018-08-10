@@ -1,8 +1,8 @@
 <template>
     <div>
       <el-dialog title="分配客户" :visible.sync="assign" @close="close" center @open="open">
-        <el-alert title="输入的分配数量已大于可分配的客户总量" center type="error" :show-icon="toast" class="toast" v-show="warn"></el-alert>
-        <el-alert title="请输入分配数量" center type="error" :show-icon="toast" class="toast" v-show="warn2"></el-alert>
+        <!-- <el-alert title="输入的分配数量已大于可分配的客户总量" center type="error" :show-icon="toast" class="toast" v-show="warn"></el-alert>
+        <el-alert title="请输入分配数量" center type="error" :show-icon="toast" class="toast" v-show="warn2"></el-alert> -->
         <div :style="{'text-align':'left'}">未分配客户总量：{{totals}}人</div>
         <div class="tit">
             <p>坐席</p>
@@ -227,30 +227,28 @@ export default {
             })
         },
         check(){
-            console.log(1);
-            var result=true;
-            console.log(this.workernum)
             for(var i=0;i<this.workernum.length;i++){
                 if(this.workernum[i]!=''){
-                    result=false;
+                    this.$message({
+                        showClose: true,
+                        message: '请输入分配数量',
+                        type: 'warning'
+                    });
+                }
+                if(this.workernum[i]>this.total){
+                    this.$message({
+                        showClose: true,
+                        message: '输入的分配数量已大于可分配的客户总量',
+                        type: 'warning'
+                    });
                 }
             }
-            this.warn2=result;
         }
     },
     inject:['reload'],
     computed:{
         totals:function(){
             return this.total;
-        },
-        warn:function(){
-            var result=false;
-            for(var i=0;i<this.workernum.length;i++){
-                if(this.workernum[i]>this.total){
-                    result=true;
-                }
-            }
-            return result;
         }
     }
 }

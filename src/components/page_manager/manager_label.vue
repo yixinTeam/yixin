@@ -1,5 +1,6 @@
 <template>
     <div class="container">
+        <el-alert title="最多只能设置10个标签" type="warning" center show-icon v-show="warn"></el-alert>
         <div class="part2">
             <div class="part2_tit">
                 <el-button type="primary" class="button" :style="{float:'left'}" @click="add">新增客户标签</el-button>
@@ -37,7 +38,7 @@
                 <div>
                     <div class="state">
                         <p class="grey">跟进状态</p>
-                        <p class="black see">发展成功</p>
+                        <p class="black see see_active">发展成功</p>
                         <p class="black see">持续跟进</p>
                         <p class="black see">发展失败</p>
                     </div>
@@ -121,6 +122,15 @@
         font-size: 14px;
         margin-bottom: 10px;
     }
+    .see{
+        background: #CDCDCD;
+        color: #fff;
+        border-radius: 3px;
+        padding: 0 4px;
+    }
+    .see_active{
+        background: #7496F2;
+    }
 </style>
 
 <script>
@@ -135,7 +145,8 @@ export default {
             add_tag:false,
             tableData: [],
             chdata:[],
-            DialogVisible:false
+            DialogVisible:false,
+            warn:false
         }
     },
     components:{tag},
@@ -153,6 +164,11 @@ export default {
             });
         },
         add:function(){
+            console.log(this.tableData.length);
+            if(this.tableData.length>9){
+                this.warn=true;
+                return
+            }
             this.add_tag=true;
         },
         tag_init:function(data){

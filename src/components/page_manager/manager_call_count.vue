@@ -16,12 +16,11 @@
                     :picker-options="pickerOptions"
                     type="daterange"
                     range-separator="-"
-                    start-placeholder="开始日期" :style="{'float':'left'}"
-                    end-placeholder="结束日期" size="mini" prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
+                    :start-placeholder="leading_record[0]" :style="{'float':'left'}"
+                    :end-placeholder="leading_record[1]" size="mini" prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
                     </el-date-picker>
                 </div>
-                <el-button type="info" plain class="button" :style="{'float':'right'}">导出当前结果</el-button>
-            </div>
+                </div>
             <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table" @sort-change="sort_change">
                 <el-table-column prop="shortName" label="坐席昵称" class-name="line2" sortable='custom'  :show-overflow-tooltip=true min-width="100"> </el-table-column>
                 <el-table-column prop="loginName" label="坐席账号" class-name="line3" :show-overflow-tooltip=true min-width="100"> </el-table-column>

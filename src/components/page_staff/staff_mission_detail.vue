@@ -12,7 +12,6 @@
                 <el-input placeholder="按任务名称搜索" prefix-icon="el-icon-search" v-model="search" class="search" size="mini">
                 </el-input>
                 <el-button type="info" class="button" :style="{float:'left'}" @click="missoin_search">搜索</el-button>
-                <el-button type="info" plain class="button">导出当前结果</el-button>
             </div>
             <div class="zhankai" v-if="search_state==false">
                 <el-button type="info" plain class="button" @click="search_change(true)">收起</el-button>

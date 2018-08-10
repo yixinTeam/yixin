@@ -6,10 +6,10 @@
         <div class="title nav2 drop">
           <el-dropdown trigger="click">
           <span class="el-dropdown-link">
-            {{identity.default}}<i class="el-icon-arrow-down el-icon--right"></i>
+            {{identity}}<i class="el-icon-arrow-down el-icon--right"></i>
           </span>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>张领导</el-dropdown-item>
+              <el-dropdown-item>{{identity}}</el-dropdown-item>
               <el-dropdown-item @click.native="test">
                   登出
               </el-dropdown-item>
@@ -186,7 +186,7 @@ export default {
 		return {
       alive:true,
       notify:'3',
-      identity:{'list':[{'states':'张领导','key':'1'},{'states':'登出','key':'2'}],'default':'张领导'}
+      identity:null
 		};
 	},
 	methods: {
@@ -212,12 +212,7 @@ export default {
     }
   },
   mounted(){
-    // var data={
-    //   'name':'qy1','password':md5.md5('123456'),'password2':'123456'
-    // };
-    // this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
-    //   data
-    // )
+    this.identity=this.$route.query.userId;
   }
 };
 </script>

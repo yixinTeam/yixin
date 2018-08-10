@@ -2,32 +2,29 @@
   <el-container>
     <el-header>
       <el-row height="auto" class="header">
-        <el-col :span="6"><div class="grid-content bg-purple-dark title"><i class="el-icon-menu"></i>猎客呼叫中心|管理中心</div></el-col>
-        <el-col :span="14"><div class="grid-content bg-purple-dark">&nbsp; </div></el-col>
-        <el-col :span="2" class="notify">
-          <div class="grid-content bg-purple-dark">
-            <el-badge :value="notify" class="item">
-              <el-button size="small">通知</el-button>
-            </el-badge>
-          </div>
-        </el-col>
-        <el-col :span="2">
-          <div class="grid-content bg-purple-dark title">
-            <el-dropdown trigger="click">
-            <span class="el-dropdown-link">
-              {{identity.default}}<i class="el-icon-arrow-down el-icon--right"></i>
-            </span>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item v-for="item in identity.list" :key='item.key'>{{item.states}}</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-
-          </div>
-        </el-col>
+        <div class="nav title">猎客呼叫中心</div>
+        <div class="title nav2 drop">
+          <el-dropdown trigger="click">
+          <span class="el-dropdown-link">
+            {{identity.default}}<i class="el-icon-arrow-down el-icon--right"></i>
+          </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>张领导</el-dropdown-item>
+              <el-dropdown-item @click.native="test">
+                  登出
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+        <div class="notify nav2">
+          <el-badge :value="notify">
+            <i class="el-icon-menu"></i>
+          </el-badge>
+        </div>
       </el-row>
     </el-header>
     <el-container>
-      <el-aside width="200px">
+      <el-aside width="auto">
         <el-row class="tac">
           <el-col :span="24">
             <el-menu
@@ -35,7 +32,7 @@
               class="el-menu-vertical-demo"
               @open="handleOpen"
               @close="handleClose"
-              background-color="#545c64"
+              background-color="#4B4D50"
               text-color="#fff"
               active-text-color="#ffd04b">
               <router-link :to="{path:'/operation/index'}">
@@ -50,11 +47,11 @@
                   <span>账号管理&#12288;&#12288;</span>
                 </template>
                 <el-menu-item-group>
-                  <router-link :to="{path:'/operation/manaer'}">
-                    <el-menu-item index="2-1">管理员账号</el-menu-item>
+                  <router-link :to="{path:'/operation/manager'}">
+                    <el-menu-item index="2-1">管理员账号&#12288;</el-menu-item>
                   </router-link>
                   <router-link :to="{path:'/operation/staff'}">
-                    <el-menu-item index="2-2">坐席账号</el-menu-item>
+                    <el-menu-item index="2-2">坐席账号&#12288;&#12288;</el-menu-item>
                   </router-link>
                 </el-menu-item-group>
               </el-submenu>
@@ -65,7 +62,7 @@
                 </template>
                 <el-menu-item-group>
                   <router-link :to="{path:'/manager/worker'}">
-                    <el-menu-item index="3-1">个人信息</el-menu-item>
+                    <el-menu-item index="3-1">个人信息&#12288;&#12288;</el-menu-item>
                   </router-link>
                 </el-menu-item-group>
               </el-submenu>
@@ -80,6 +77,11 @@
   </el-container>
 </template>
 <style scoped>
+.item{
+  padding: 0!important;
+  width: 170px!important;
+  min-width: 170px;
+}
 .el-icon-index:before {
     content: '';
     width: 18px;
@@ -114,18 +116,36 @@
     background: url('../../../static/icon/shezhi.png');
     background-size:18px 18px;
 }
+.el-icon-worker:before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    display: block;
+    background: url('../../../static/icon/worker.png');
+    background-size:18px 18px;
+}
 .tac {
-	width: 200px;
+	width: 170px;
   height: 100vh;
-  position: absolute;
   z-index: 2;
-  background: -webkit-repeating-linear-gradient(transparent, transparent 40px, rgba(84, 92, 100,1) 40px,rgba(84, 92, 100,1) 100%);
-  background: -o-repeating-linear-gradient(transparent, transparent 40px, rgba(84, 92, 100,1) 40px,rgba(84, 92, 100,1) 100%);
-  background: -moz-repeating-linear-gradient(transparent, transparent 40px, rgba(84, 92, 100,1) 40px,rgba(84, 92, 100,1) 100%);
-  background: repeating-linear-gradient(transparent, transparent 40px, rgba(84, 92, 100,1) 40px,rgba(84, 92, 100,1) 100%);
 }
 .header{
-  border-bottom: 1px solid rgba(84, 92, 100,0.8);
+  overflow: hidden;
+}
+.header .nav{
+  width: 170px;
+  float: left;
+  background-color: #7496F2;
+  color:#fff;
+  font-size: 20px;
+  padding-bottom: 1px;
+}
+.header .drop{
+  padding: 0 30px 0 18px;
+}
+.header .nav2{
+  width: auto;
+  float: right;
 }
 .title{
   line-height: 53px;
@@ -142,9 +162,13 @@
 a{
   text-decoration: none;
 }
+.content{
+  background-color: #F2F4F5;
+}
 </style>
 
 <script>
+import jm from '../js/md5.js'
 export default {
 	name: 'operation',
 	data() {
@@ -169,12 +193,12 @@ export default {
     }
   },
   mounted(){
-    // var data={
-    //   'name':'wshqy','password':'123456','password2':'123456'
-    // };
-    // this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
-    //   data
-    // )
+    var data={
+      'name':'yw1','password':jm.md5('yw1'),'password2':'123456'
+    };
+    this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
+      data
+    )
   },
 	provide(){
     return {

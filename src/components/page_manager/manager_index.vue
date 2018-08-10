@@ -30,12 +30,12 @@
             <div class="p3_tit">
                 <p>坐席呼叫统计</p>
                 <el-radio-group v-model="time_past" class="p3_radio" @change="change">
-                    <el-radio :label="1">今天</el-radio>
+                    <el-radio :label="1" selected>今天</el-radio>
                     <el-radio :label="2">昨天</el-radio>
                     <el-radio :label="7">过去7天</el-radio>
                     <el-radio :label="30">过去30天</el-radio>
                 </el-radio-group>
-                <router-link :to="{path:'/manager/worker'}">
+                <router-link :to="{path:'/manager/call_count'}">
                 <p class="grey">查看完整数据<i class="el-icon-d-arrow-right"></i></p>
                 </router-link>
             </div>
@@ -127,7 +127,7 @@ export default {
             worker:{num:'8',all:'10'},
             mission_data:[],
             worker_data:[],
-            time_past:''
+            time_past:1
         }
     },
     mounted() {

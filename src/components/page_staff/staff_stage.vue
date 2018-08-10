@@ -47,7 +47,7 @@
             </div>
             <div class="con">
                 <p v-if="TaskBySeat_data.length==0&&DialPlanIntroWithPage_data.length==0">暂无数据</p>
-                <el-tree :highlight-current="true" class="staff" :data="TaskBySeat_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0&&TaskBySeat_data.length!=0" @scroll.native="test($event)">
+                <el-tree :highlight-current="true" class="staff" :data="TaskBySeat_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0&&TaskBySeat_data.length!=0" @scroll.native="test($event)" ref="tree" node-key="id">
                     <div class="custom-tree-node detail_init" slot-scope="{ node, data }" @click="detail_init(data,1)">
                         <!-- 呼叫结果 默认值0：未开始 10：正常通话 11：转给其他坐席 12：转值班电话 21：没坐席接听 22：未接通 -->
                         <p>{{ node.label}}</p>
@@ -60,7 +60,7 @@
                         <span>{{data.areaName}}{{data.depName}}</span>
                     </div>
                 </el-tree>
-                <el-tree :highlight-current="true" class="staff" :data="DialPlanIntroWithPage_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0&&DialPlanIntroWithPage_data.length!=0">
+                <el-tree :highlight-current="true" class="staff" :data="DialPlanIntroWithPage_data" :props="defaultProps" accordion @node-click="handleNodeClick" v-show="task_state==0&&DialPlanIntroWithPage_data.length!=0" ref="tree" node-key="id">
                     <div class="custom-tree-node detail_init" slot-scope="{ node, data }" @click="detail_init(data,2)" @contextmenu='prevent($event,data)'>
                         <!-- 呼叫结果 默认值0：未开始 10：正常通话 11：转给其他坐席 12：转值班电话 21：没坐席接听 22：未接通 -->
                         <p>{{ node.label}}</p>
@@ -73,14 +73,10 @@
                         <span>{{data.areaName}}{{data.depName}}</span>
                     </div>
                 </el-tree>
-                <div class="custom-tree-node" v-show="task_state==1" v-for="(item,index) in booklist" :key="index" @click="detail_init(item)">
+                <div class="custom-tree-node node" v-show="task_state==1" v-for="(item,index) in booklist" :key="index" @click="detail_init(item,1)">
                     <p>{{item.userName}}</p>
                     <span>{{item.lastCalledTime}}</span>
-                    <span>{{item.callResult==0?'':''}}</span>
-                    <span>{{item.callResult==10?'通话':''}}</span>
-                    <span>{{item.callResult==11?'被转移':''}}</span>
-                    <span>{{item.callResult==21?'未接听':''}}</span>
-                    <span>{{item.callResult==22?'未接通':''}}</span>
+                    <span>{{item.nextContactTime}}</span>
                     <span>{{item.areaName}}{{item.depName}}</span>
                 </div>
             </div>
@@ -195,12 +191,12 @@
                 </div>
                 <div class="tag">
                     <p class="grey" :style="{'float':'left','margin':'0 7px','line-height':'26px'}">客户标签</p>
-                    <el-dropdown :hide-on-click="false" v-for="(item,index) in tag_data" :key="index"  @command="handleCommand" :style="{'float':'left','line-height':'26px'}">
+                    <el-dropdown :hide-on-click="false" v-for="(item,index) in history.summaryDto.tags" :key="index"  @command="handleCommand" :style="{'float':'left','line-height':'26px'}">
                         <span class="el-dropdown-link">
                             {{item.tagName}}<i class="el-icon-arrow-down el-icon--right"></i>
                         </span>
                         <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item v-for="(_item,_index) in item.tags" :key="_index" :command="{'index':index,'value':_item}">{{_item}}</el-dropdown-item>
+                            <el-dropdown-item v-for="(_item,_index) in item.taglist" :key="_index" :command="{'index':index,'value':_item}">{{_item}}</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
                 </div>
@@ -220,11 +216,11 @@
             </div>
             <div class="history">
                 <div :style="{'overflow':'hidden'}">
-                    <p class="black tit" :style="{'float':'left'}">历史通话记录&#12288;<span class='grey'>总联系{{history.historyDto.totalContactNum}}次，有效联系{{history.historyDto.effectiveContactNum}}次</span></p>
+                    <p class="black tit" :style="{'float':'left'}">历史通话记录&#12288;<span class='grey'>总联系{{history.historyDto?history.historyDto.totalContactNum:0}}次，有效联系{{history.historyDto?history.historyDto.effectiveContactNum:0}}次</span></p>
                 <p class="grey curson" :style="{'float':'right'}" @click="enter(history.summaryDto)">查看更多<i class="el-icon-d-arrow-right"></i></p>
                 </div>
-                <p class="grey" id="talk">{{history.historyDto.details[0].callEndTime}}&#12288;&#12288;{{history.historyDto.details[0].shortName}} <span class="black">{{history.historyDto.details[0].callReaultString}}</span> {{history.historyDto.details[0].callDuration}}</p>
-                <div>
+                <p class="grey" id="talk" v-if="history.historyDto">{{history.historyDto.details[0].callEndTime}}&#12288;&#12288;{{history.historyDto.details[0].shortName}} <span class="black">{{history.historyDto.details[0].callReaultString}}</span> {{history.historyDto.details[0].callDuration}}</p>
+                <div v-if="history.historyDto">
                     <div class="state">
                         <p class="grey">客户状态</p>
                         <el-button type="info" size="mini" :style="{'background':'#f4f4f4','border-color':'#f4f4f4','color':'#7496F2','float':'left'}" round>{{history.historyDto.details[0].userResultStr}}</el-button>
@@ -233,9 +229,9 @@
                     </div>
                 </div>
                 <div class="tag">
-                    <el-button type="info" size="mini" v-for="item in history.summaryDto.taglist" :key="item" :style="{'background':'#7496F2','border-color':'#fff'}" round>{{item}}</el-button>
+                    <el-button type="info" size="mini" v-for="item in history.summaryDto.tags[0].taglist" :key="item" :style="{'background':'#7496F2','border-color':'#fff'}" round>{{item}}</el-button>
                 </div>
-                <div class="note">
+                <div class="note" v-if="history.historyDto">
                     <p class="grey" :style="{'float':'left','margin':'0 7px','line-height':'26px'}">详情备注</p>
                     <p :style="{'margin':'3px 7px','text-align':'left'}">{{history.historyDto.details[0].desc}}</p>
                 </div>
@@ -498,6 +494,9 @@
         line-height:45px;
         float: left;
     }
+    .node{
+        padding:10px;
+    }
     .mes{
         overflow: hidden;
         padding: 10px 0;
@@ -671,12 +670,16 @@ export default {
                     ]
                 },
                 summaryDto:{
-                    tags:[],
+                    tags:[{
+                        "tagName":"213",
+                        "tagOrder":2,
+                        "tagValue":"aaa;v",
+                        "taglist":[]
+                    }],
                     taskClientId:"8bcd3b7d-3b74-4099-9abe-a421b9aaab27",
                     taskId:"da59b508-2443-42ca-af8d-33373d28b511",
                     taskName:"发大水发发嘎嘎水果蛋糕",
-                    userResult:1,
-                    taglist:[]
+                    userResult:1
                 }
             },
             contextmenu:{state:false,left:'',top:'',target:''},
@@ -737,15 +740,6 @@ export default {
         //缩小导航菜单
         this.$emit("close");
         this.TaskList_init({});
-        this.$ajax.post(this.$preix+'/new/tag/findTagList')
-        .then( (res) => {
-            if(res.data.code==200){
-                for(let i=0;i<res.data.info.length;i++){
-                    res.data.info[i].tags=res.data.info[i].tagValue.split(';');
-                }
-                this.tag_data=res.data.info;
-            }
-        });
         this.call_init(this.hasGetUserMedia());
         this.connect();
     },
@@ -760,9 +754,7 @@ export default {
     },
     methods:{
         test(){
-            console.log(this.call_auto,typeof(this.call_auto));
             if(this.call_auto=='true'){
-                console.log(123)
             }
         },
         uaInit:function (workbenchRst) {
@@ -1040,9 +1032,10 @@ export default {
         },
         //获取客户详情
         detail_init(item,type){
+            console.log(this.TaskBySeat_data,this.$refs.tree,this.$refs.tree.getCheckedKeys())
             this.show=false;
+            this.time_next='';
             this.call_auto_init=false;
-            console.log(item);
             this.call_state=0;
             this.worker_state=2;
             clearTimeout(this.call_error);
@@ -1074,15 +1067,15 @@ export default {
                     this.taskClientId=item.taskClientId;
                     this.taskId=item.taskId;
                     this.partnerAccountId=res.data.info.partnerAccountId;
-                    this.id=item.id;
                 }
             });
             this.$ajax.post(this.$preix+'/new/seatWorkbench/findSummaryAndHistoryDetail',{'taskClientId':item.taskClientId,'taskId':item.taskId})
             .then( (res) => {
                 if(res.status==200){
                     if(res.data.summaryDto.tags[0]!=undefined){
-                        res.data.summaryDto.taglist=res.data.summaryDto.tags[0].tagValue.split(';');
+                        res.data.summaryDto.tags[0].taglist=res.data.summaryDto.tags[0].tagValue.split(';');
                     }
+                    console.log(res.data);
                     this.history=res.data;
                 }
             });
@@ -1097,6 +1090,7 @@ export default {
                     for(let i=0;i<res.data.rows.length;i++){
                         let obj={};
                         let id=res.data.rows[i].taskId;
+                        obj.id=res.data.rows[i].taskId;
                         obj.label=res.data.rows[i].taskName;
                         var param = {};
                         param.taskId = res.data.rows[i].taskId;
@@ -1105,7 +1099,7 @@ export default {
                         ).then( res=>{
                             if(res.data.code==200){
                                 
-                                res.data.rows.map(item=>{item.label=item.userName;item.taskId=id});
+                                res.data.rows.map(item=>{item.label=item.userName;item.taskId=id;item.id=item.taskClientId});
                                 //res.data.rows.map(item=>item.taskId=id);
                                 obj.children=res.data.rows;
                             }
@@ -1125,6 +1119,7 @@ export default {
                     for(let i=0;i<res.data.rows.length;i++){
                         let obj={};
                         obj.label=res.data.rows[i].name;
+                        obj.id=res.data.rows[i].id;
                         obj.dialplanId=res.data.rows[i].id;
                         var param = {};
                         param.dialplanId = res.data.rows[i].id;
@@ -1134,7 +1129,7 @@ export default {
                             if(res.data.code==200){
                                 res.data.rows.map(item=>{
                                     item.label=item.userName;
-                                    item.id=item.id
+                                    item.id=item.id;
                                 });
                                 obj.children=res.data.rows;
                             }
@@ -1154,12 +1149,10 @@ export default {
         //右键菜单
         prevent:function(e,data,note){
             this.planData=data;
-            console.log(data);
             if(note==1&&data.children){
                 return
             }
             e.preventDefault();
-            console.log($,$('.content').eq(0).offset());
             this.contextmenu.state=true;
             this.contextmenu.left=e.clientX-$('.content').eq(0).offset().left;
             this.contextmenu.top=e.clientY+document.documentElement.scrollTop-$('.content').eq(0).offset().top;
@@ -1180,9 +1173,9 @@ export default {
         },
         //删除呼叫任务
         remove(){
-            console.log(this.planData,this.planData.children);
+            console.log(this.planData)
             if(this.planData.children!=undefined){
-                let Id=this.planData.taskClientId;
+                let Id=this.planData.dialplanId;
                 this.$ajax.post(this.$preix+'/new/seatWorkbench/deleteDialplan',{'id':Id}
                 ).then( res=>{
                     if(res.data.code==200){
@@ -1242,10 +1235,12 @@ export default {
                         this.TaskBySeat_data.map((items,index)=>{
                             let i=items.children.indexOf(_this.active_data);
                             if(i<(items.children.length-1)&&i!=-1){
-                                _this.detail_init(items.children[i+1],1);
-                                if(_this.worker_state!=1){
+                                if(_this.worker_state!='1'){
                                     _this.TaskBySeat_data[index].children.splice(i,1);
                                 }
+                                _this.detail_init(items.children[i+1],1);
+                                console.log(items.children[i+1],items.children[i+1].id)
+                                _this.$refs.tree.setCheckedKeys([items.children[i+1].id]);
                                 if(_this.call_auto=='true'){
                                     _this.call_state=5;
                                     _this.call_auto_init=true;
@@ -1261,11 +1256,12 @@ export default {
                         this.DialPlanIntroWithPage_data.map((items,index)=>{
                             let i=items.children.indexOf(_this.active_data);
                             if(i<items.children.length-1&&i!=-1){
-                                _this.detail_init(items.children[i+1],2);
-                                console.log(_this.DialPlanIntroWithPage_data[index].children,_this.worker_state,_this.DialPlanIntroWithPage_data[index].children[i]);
-                                if(_this.worker_state!=1){
+                                if(_this.worker_state!='1'){
                                     _this.DialPlanIntroWithPage_data[index].children.splice(i,1);
                                 }
+                                _this.detail_init(items.children[i+1],2);
+                                console.log(items.children[i+1],items.children[i+1].id)
+                                _this.$refs.tree.setCheckedKeys([items.children[i+1].id]);
                                 if(_this.call_auto=='true'){
                                     _this.call_state=5;
                                     _this.call_auto_init=true;
