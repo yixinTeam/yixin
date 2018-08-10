@@ -1038,7 +1038,7 @@ export default {
             this.time_next='';
             this.call_auto_init=false;
             this.call_state=0;
-            this.worker_state=2;
+            this.worker_state=1;
             clearTimeout(this.call_error);
             this.callIccSessionId=null;
             if(item.children){
@@ -1240,7 +1240,7 @@ export default {
                     if(res.data.code!=200){
                         alert(res.data.message);
                     }else{
-                        console.log('提交小结',this.active_data);
+                        console.log('提交小结');
                         _this.call_state=0;
                         this.TaskBySeat_data.map((items,index)=>{
                             let i=items.children.indexOf(_this.active_data);
@@ -1249,7 +1249,6 @@ export default {
                                     _this.TaskBySeat_data[index].children.splice(i,1);
                                 }
                                 _this.detail_init(items.children[i],1);
-                                console.log(items.children[i+1],items.children[i+1].id)
                                 _this.$refs.tree.setCheckedKeys([items.children[i+1].id]);
                                 if(_this.call_auto=='true'){
                                     _this.call_state=5;
@@ -1260,6 +1259,7 @@ export default {
                                     },_this.call_remin*1000)
                                 }
                             }else if(i==(items.children.length-1)){
+                                console.log('到底了')
                                 _this.call_hidden=true;
                                 _this.TaskBySeat_data.splice(index,1);
                             }
@@ -1286,14 +1286,18 @@ export default {
                                 _this.DialPlanIntroWithPage_data.splice(index,1);
                             }
                         });
-                        this.booklist.map((items,index)=>{
-                            if(items==_this.active_data){
-                                _this.booklist.splice(index,1);
-                                _this.detail_init(_this.booklist[index],2);
-                            }else if(index==(_this.booklist.length-1)){
-                                _this.call_hidden=true;
-                            }
-                        });
+                        console.log(this.booklist.length)
+                        if(this.booklist.length>0){
+                            this.booklist.map((items,index)=>{
+                                if(items==_this.active_data&&index!=(_this.booklist.length-1)){
+                                    _this.booklist.splice(index,1);
+                                    _this.detail_init(_this.booklist[index],2);
+                                }else if(items==_this.active_data&&index==(_this.booklist.length-1)){
+                                    //console.log('bug')
+                                    _this.call_hidden=true;
+                                }
+                            });
+                        }
                     }
                 });
             }
@@ -1338,6 +1342,7 @@ export default {
                             _this.call_error=setTimeout(function(){
                                 if(_this.call_state==1){
                                     alert('通话异常，已为你重置本次通话');
+                                    _this.callIccSessionId=null;
                                     _this.call_state=0;
                                 }
                             },8000)

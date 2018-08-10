@@ -193,12 +193,12 @@ export default {
     }
   },
   mounted(){
-    var data={
-      'name':'yw1','password':jm.md5('yw1'),'password2':'123456'
-    };
-    this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
-      data
-    )
+    // var data={
+    //   'name':'yw1','password':jm.md5('yw1'),'password2':'123456'
+    // };
+    // this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
+    //   data
+    // )
   },
 	provide(){
     return {

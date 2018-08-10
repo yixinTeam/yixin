@@ -227,13 +227,10 @@ export default {
             })
         },
         check(){
+            var result=true;
             for(var i=0;i<this.workernum.length;i++){
                 if(this.workernum[i]!=''){
-                    this.$message({
-                        showClose: true,
-                        message: '请输入分配数量',
-                        type: 'warning'
-                    });
+                    result=false;
                 }
                 if(this.workernum[i]>this.total){
                     this.$message({
@@ -242,6 +239,13 @@ export default {
                         type: 'warning'
                     });
                 }
+            }
+            if(result){
+                this.$message({
+                    showClose: true,
+                    message: '请输入分配数量',
+                    type: 'warning'
+                });
             }
         }
     },

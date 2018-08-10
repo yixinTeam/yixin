@@ -1,41 +1,8 @@
 <template>
     <div class="container">
-        <div id="first_init">
-            <el-table :data="tableData" :style="{'width': '50%','margin':'20vh auto 12px'}" :default-sort = "{prop: 'date', order: 'descending'}" class="table">
-                <el-table-column prop="shortName" label="坐席昵称" class-name="line2" sortable  :show-overflow-tooltip=true min-width="100">
-                  <template slot-scope="scope">
-                    <div class="father">
-                      <p>{{scope.row.shortName}}</p>
-                      <input type="text" v-model="scope.row.shortName">
-                    </div>
-                  </template>
-                </el-table-column>
-                <el-table-column prop="loginName" label="坐席账号" class-name="line3" :show-overflow-tooltip=true min-width="120">
-                  <template slot-scope="scope">
-                    <div class="father">
-                      <p>{{scope.row.loginName}}</p>
-                      <input type="text" v-model="scope.row.loginName">
-                    </div>
-                  </template>
-                </el-table-column>
-                <el-table-column class-name="line11" label="是否激活坐席"  min-width="100">
-                    <template slot-scope="scope">
-                      <el-checkbox v-model="checked[scope.$index]" checked>激活坐席</el-checkbox>
-                    </template>
-                </el-table-column>
-                <el-table-column class-name="line11" label="是否重置密码"  min-width="100">
-                    <template slot-scope="scope">
-                      <el-checkbox v-model="checked[scope.$index]" checked>重置密码</el-checkbox>
-                    </template>
-                </el-table-column>
-            </el-table>
-            <div :style="{'text-align':'center'}">
-              <el-button class="button" size="small">暂不设置</el-button>
-              <el-button type="info" class="button" size="small">一键生效</el-button>
-            
-            </div>
-        </div>
-        <a-player :music="songList" :showlrc="3" :narrow="false" theme="#b7daff" mode="circulation" v-if="flag" listmaxheight='96px' ref="player"></a-player>
+        <a-player autoplay :music="{
+  url: 'http://10.240.80.72:10712/icc-static/2018/ring.mp3?sessionId=42375b65-e78f-4639-896a-796239866419&callSessionId=3f566e16-3c00-44b5-9ed9-8b43b1e316da'
+}"></a-player>
 
     
     </div>
@@ -67,7 +34,8 @@ export default {
 
             musicList:'',
 
-            songList:[]
+            songList:[],
+            src:'http://10.240.80.72:10712/icc-static/2018/ring.mp3?sessionId=42375b65-e78f-4639-896a-796239866419&callSessionId=3f566e16-3c00-44b5-9ed9-8b43b1e316da'
         }
     },
     components: {
