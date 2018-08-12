@@ -21,15 +21,15 @@
                     </el-date-picker>
                 </div>
                 </div>
-            <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table" @sort-change="sort_change">
-                <el-table-column prop="shortName" label="坐席昵称" class-name="line2" sortable='custom'  :show-overflow-tooltip=true min-width="100"> </el-table-column>
+            <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table">
+                <el-table-column prop="shortName" label="坐席昵称" class-name="line2"  :show-overflow-tooltip=true min-width="100"> </el-table-column>
                 <el-table-column prop="loginName" label="坐席账号" class-name="line3" :show-overflow-tooltip=true min-width="100"> </el-table-column>
-                <el-table-column prop="callTotal" label="总呼叫次数" class-name="line4" sortable='custom' :show-overflow-tooltip=true min-width="110"> </el-table-column>
-                <el-table-column prop="callTalkedTotal" label="总呼通次数" class-name="line5" sortable='custom' :show-overflow-tooltip=true min-width="110"> </el-table-column>
-                <el-table-column prop="callNumTotal" label="总呼叫人数" class-name="line6" sortable='custom' :show-overflow-tooltip=true min-width="110"> </el-table-column>
-                <el-table-column prop="callTalkedNumTotal" label="总呼通人数" class-name="line7" sortable='custom' :show-overflow-tooltip=true min-width="110"> </el-table-column>
-                <el-table-column prop="callDurationTotal" label="总呼叫时长(min)" class-name="line8" sortable='custom' :show-overflow-tooltip=true min-width="130"> </el-table-column>
-                <el-table-column prop="callTalkedDurationTotal" label="平均呼叫时长(min)" class-name="line8" sortable='custom' :show-overflow-tooltip=true min-width="150"> </el-table-column>
+                <el-table-column prop="callTotal" label="总呼叫次数" class-name="line4" :show-overflow-tooltip=true min-width="110"> </el-table-column>
+                <el-table-column prop="callTalkedTotal" label="总呼通次数" class-name="line5" :show-overflow-tooltip=true min-width="110"> </el-table-column>
+                <el-table-column prop="callNumTotal" label="总呼叫人数" class-name="line6" :show-overflow-tooltip=true min-width="110"> </el-table-column>
+                <el-table-column prop="callTalkedNumTotal" label="总呼通人数" class-name="line7" :show-overflow-tooltip=true min-width="110"> </el-table-column>
+                <el-table-column prop="callDurationTotal" label="总呼叫时长(min)" class-name="line8" :show-overflow-tooltip=true min-width="130"> </el-table-column>
+                <el-table-column prop="callTalkedDurationTotal" label="平均呼叫时长(min)" class-name="line8" :show-overflow-tooltip=true min-width="150"> </el-table-column>
                 <el-table-column prop="p_caozuo" class-name="line11" label="操作"  min-width="60">
                     <template slot-scope="scope">
                         <router-link :to="{path:'./call_detail', query: { id: scope.row.seatAccountId,days:leading_record }}">
@@ -151,7 +151,7 @@ export default {
         },
         date_change(){
             this.leading_record=this.leading_date;
-            var data={'pageSize':10,beginDay:this.leading_date[0],endDay:this.leading_date[1],'requireTotalCount':true,'shortOrLoginName':this.search};
+            var data={'pageSize':10,beginDay:this.leading_date?this.leading_date[0]:null,endDay:this.leading_date?this.leading_date[1]:null,'requireTotalCount':true,'shortOrLoginName':this.search};
             for (let key in data){
                 if(data[key]==''){
                     delete data[key];

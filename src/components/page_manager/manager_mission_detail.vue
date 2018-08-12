@@ -21,7 +21,7 @@
                 </div>
                 <div>
                     <p class="grey">跟进坐席</p>
-                    <p class="black" v-for=" (item,index) in worker_list" :key="index" :class="{see_active:worker_state.indexOf(index)!=-1}" @click="worker_change(index,item.id)">{{item.shortName}}</p>
+                    <p class="black" v-for=" (item,index) in worker_list" :key="index" :class="{see_active:worker_state==index}" @click="worker_change(index,item.id)">{{item.shortName}}</p>
                 </div>
                 <div>
                     <p class="grey">导入时间</p>
@@ -30,7 +30,8 @@
                 </div>
                 <div>
                     <p class="grey">客户标签</p>
-                    <el-dropdown :hide-on-click="false" v-for="(item,index) in data" :key="index"  @command="handleCommand">
+                     <!-- :hide-on-click="false" -->
+                    <el-dropdown v-for="(item,index) in data" :key="index"  @command="handleCommand">
                         <span class="el-dropdown-link">
                             {{item.tagName}}<i class="el-icon-arrow-down el-icon--right"></i>
                         </span>
@@ -45,15 +46,16 @@
                 <div>
                     <p class="grey">筛选条件</p>
                     <p class="black see_active">客户状态：{{custom_state==''?custom_list[0].value:custom_list[custom_state].value}}</p>
-                    <p class="black see_active">跟进坐席：<span v-for="(item,index) in worker_state" :key="index">{{worker_list[item].shortName}};</span></p>
+                    <p class="black see_active">跟进坐席：{{worker_list[worker_state].shortName}}</p>
+                    <!-- <p class="black see_active">跟进坐席：<span v-for="(item,index) in worker_state" :key="index">{{worker_list[item].shortName}};</span></p> -->
                     <el-tag type="info" class="tag" v-if="leading_date!=null&&leading_date.length>0">{{'导入时间： '+leading_date[0]+'~'+leading_date[1]}}</el-tag>
                     <p class="black see_active" v-if="tags.length>0">客户标签：<span  v-for="(item,index) in tags" :key="index" v-if="item!=undefined" >{{item.value}}&#12288;</span></p>
                 </div>
             </div>
-            <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table" @sort-change="sort_change">
-                <el-table-column prop="userName" label="客户姓名" class-name="line2" sortable='custom'  :show-overflow-tooltip=true min-width="80"> </el-table-column>
+            <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table">
+                <el-table-column prop="userName" label="客户姓名" class-name="line2"  :show-overflow-tooltip=true min-width="80"> </el-table-column>
                 <el-table-column prop="userNumber" label="手机号" class-name="line3" :show-overflow-tooltip=true min-width="100"> </el-table-column>
-                <el-table-column prop="create" label="导入时间" class-name="line4" sortable='custom' :show-overflow-tooltip=true min-width="130"> </el-table-column>
+                <el-table-column prop="create" label="导入时间" class-name="line4" :show-overflow-tooltip=true min-width="130"> </el-table-column>
                 <!-- 0：预留 1：继续跟进 2：发展成功 3：发展失败 -->
                 <el-table-column label="客户状态" class-name="line5" :show-overflow-tooltip=true min-width="80">
                     <template slot-scope="scope">
@@ -295,22 +297,22 @@ export default {
             this.mission_search();
         },
         worker_change:function(value,id){
-            // this.worker_state=value;
-            // this.seat=id;
-            if(this.worker_state.indexOf(value)==-1&&value!=0){
-                this.worker_state.push(value);
-                for(let i in this.worker_state){
-                    if(this.worker_state[i]==0){
-                        //delete this.worker_state[i];
-                        this.worker_state.splice(i,1);
-                    }
-                }
-            }else if(this.worker_state.indexOf(value)!=-1&&this.worker_state.length>1){
-                var index=this.worker_state.indexOf(value);
-                this.worker_state.splice(index,1);
-            }else if(value==0){
-                this.worker_state=[0];
-            }
+            this.worker_state=value;
+            this.seat=id;
+            // if(this.worker_state.indexOf(value)==-1&&value!=0){
+            //     this.worker_state.push(value);
+            //     for(let i in this.worker_state){
+            //         if(this.worker_state[i]==0){
+            //             //delete this.worker_state[i];
+            //             this.worker_state.splice(i,1);
+            //         }
+            //     }
+            // }else if(this.worker_state.indexOf(value)!=-1&&this.worker_state.length>1){
+            //     var index=this.worker_state.indexOf(value);
+            //     this.worker_state.splice(index,1);
+            // }else if(value==0){
+            //     this.worker_state=[0];
+            // }
             this.mission_search();
         },
         date_change(){
@@ -366,7 +368,7 @@ export default {
         },
         //页码改变
         page_change(val){
-            let seatAccountIds=this.worker_state.map(item=>this.worker_list[item].id);
+            let seatAccountIds=this.worker_list[this.worker_state].id;
             this.pageNum=val;
             var data={'taskId':this.$route.query.id,userResults:this.custom_list[this.custom_state].key,createBeginTime:this.leading_date!=null?this.leading_date[0]:'',createEndTime:this.leading_date!=null?this.leading_date[1]:'',nameOrNumber:this.search,'seatAccountIds':seatAccountIds,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField};
             for(let i=0;i<this.tags.length;i++){
@@ -384,7 +386,7 @@ export default {
         },
         //排序搜索
         sort_change({column, prop, order} ){
-            let seatAccountIds=this.worker_state.map(item=>this.worker_list[item].id);
+            let seatAccountIds=this.worker_list[this.worker_state].id;
             this.orderWay=order.split('ending')[0];
             this.orderField=prop;
             var data={'taskId':this.$route.query.id,"requireTotalCount" : true,userResults:this.custom_list[this.custom_state].key,createBeginTime:this.leading_date!=null?this.leading_date[0]:'',createEndTime:this.leading_date!=null?this.leading_date[1]:'',nameOrNumber:this.search,'seatAccountIds':seatAccountIds,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField};
@@ -403,7 +405,8 @@ export default {
         },
         //条件搜索
         mission_search:function(){
-            let seatAccountIds=this.worker_state.map(item=>this.worker_list[item].id);
+            let seatAccountIds=this.worker_list[this.worker_state].id;
+            //let seatAccountIds=this.worker_state.map(item=>this.worker_list[item].id);
             var data={'taskId':this.$route.query.id,"requireTotalCount" : true,userResults:this.custom_list[this.custom_state].key,createBeginTime:this.leading_date!=null?this.leading_date[0]:'',createEndTime:this.leading_date!=null?this.leading_date[1]:'',nameOrNumber:this.search,'seatAccountIds':seatAccountIds};
             for(let i=0;i<this.tags.length;i++){
                 if(this.tags[i]!=null||this.tags[i]!=undefined){

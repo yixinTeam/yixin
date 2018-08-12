@@ -30,7 +30,8 @@
                 </div>
                 <div>
                     <p class="grey">客户标签</p>
-                    <el-dropdown :hide-on-click="false" v-for="(item,index) in data" :key="index"  @command="handleCommand">
+                     <!-- :hide-on-click="false" -->
+                    <el-dropdown v-for="(item,index) in data" :key="index"  @command="handleCommand">
                         <span class="el-dropdown-link">
                             {{item.tagName}}<i class="el-icon-arrow-down el-icon--right"></i>
                         </span>
@@ -50,10 +51,10 @@
                     <p class="black see_active" v-if="tags.length>0">客户标签：<span  v-for="(item,index) in tags" :key="index" v-if="item!=undefined" >{{item.value}}&#12288;</span></p>
                 </div>
             </div>
-            <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table" @sort-change="sort_change">
-                <el-table-column prop="userName" label="客户姓名" class-name="line2" sortable='custom'  :show-overflow-tooltip=true min-width="80"> </el-table-column>
+            <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table">
+                <el-table-column prop="userName" label="客户姓名" class-name="line2"  :show-overflow-tooltip=true min-width="80"> </el-table-column>
                 <el-table-column prop="userNumber" label="手机号" class-name="line3" :show-overflow-tooltip=true min-width="100"> </el-table-column>
-                <el-table-column prop="create" label="导入时间" class-name="line4" sortable='custom' :show-overflow-tooltip=true min-width="130"> </el-table-column>
+                <el-table-column prop="create" label="导入时间" class-name="line4" :show-overflow-tooltip=true min-width="130"> </el-table-column>
                 <!-- 0：预留 1：继续跟进 2：发展成功 3：发展失败 -->
                 <el-table-column label="客户状态" class-name="line5" :show-overflow-tooltip=true min-width="80">
                     <template slot-scope="scope">
@@ -358,7 +359,6 @@ export default {
                 }
             }
             this.mission_init(data);
-            this.search_state=true;
         },
         handleCommand(command) {
             this.tags[command.index]={'value':command.value};

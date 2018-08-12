@@ -167,10 +167,10 @@ export default {
             //     console.log(1);
 			// 	return false;
             // }
-            if(!isPasswd(self.formName.userPassWord)) {
-                //self.msgErrorShow("请输入正确密码");
-				return false;
-            }
+            // if(!isPasswd(self.formName.userPassWord)) {
+            //     //self.msgErrorShow("请输入正确密码");
+			// 	return false;
+            // }
             if(self.formName.flag.length!=4) {
                 //self.msgErrorShow("请输入正确验证码");
 				return false;
@@ -188,7 +188,6 @@ export default {
             this.$ajax.post(this.$preix+'/new/loginValidate',parameter)
             .then( (res) => {
                 if(res.data.code==200){
-                    console.log(res.data.rows)
                     if(res.data.rows[0].type==1){
                         this.$router.push({ path: '/operation/index',query:{userId:self.formName.userName}})
                     }else if(res.data.rows[0].type==2){
@@ -211,9 +210,8 @@ export default {
         setCookie(c_value, p_value, expiredays){
             var exdate = new Date();
             exdate.setDate(exdate.getDate() + expiredays);
-            document.cookie="loginName=" + encodeURIComponent(c_value);
-            document.cookie="password=" + encodeURIComponent(p_value);
-            document.cookie=((expiredays == null) ? "" : "expires=" + exdate.toGMTString())
+            document.cookie="loginName=" + encodeURIComponent(c_value)+"; expires="+exdate.toGMTString();
+            document.cookie="password=" + encodeURIComponent(p_value)+"; expires="+exdate.toGMTString();;
         },
         getCookie(c_name){
             if (document.cookie.length > 0) {
@@ -254,8 +252,8 @@ export default {
     },
     mounted(){
         this.varify_img_change();
+        this.formName.userName=this.getCookie('loginName');
         if(this.loginShow){
-            this.formName.userName=this.getCookie('loginName');
             this.formName.userPassWord=this.getCookie('password');
         }
     }

@@ -49,7 +49,7 @@
                 </div>
             </div>
             <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table" @sort-change="sort_change">
-                <el-table-column label="任务名称" class-name="line1" label-class-name="line1_tit" sortable='custom' :show-overflow-tooltip=true min-width="120">
+                <el-table-column label="任务名称" class-name="line1" label-class-name="line1_tit" :show-overflow-tooltip=true min-width="120">
                     <template slot-scope="scope">
                         <router-link :to="{path:'./detail', query: { id: scope.row.id }}">
                             {{scope.row.name}}
@@ -71,10 +71,17 @@
                         <span v-for="(item,index) in scope.row.tags" :key="index">{{item.tagName}};</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="create" label="创建时间" class-name="line9" :show-overflow-tooltip=true min-width="120"> </el-table-column>
+                <el-table-column prop="create" label="创建时间" class-name="line9" :show-overflow-tooltip=true min-width="120" sortable='custom'> </el-table-column>
                 <el-table-column prop="visibleState" label="可见状态" class-name="line10" :show-overflow-tooltip=true min-width="100">
                     <template slot-scope="scope">
-                        {{scope.row.visibleState==0?'仅管理员可见':'所有人可见'}}
+                        <div class="father">
+                            <p v-show="scope.row.visibleState==0">仅管理员可见</p>
+                            <p v-show="scope.row.visibleState==1">所有人可见</p>
+                            <select v-model="scope.row.visibleState" @change="state_select(scope.row,scope.row.visibleState)">
+                                <option value="1">所有人可见</option>
+                                <option value="0">仅管理员可见</option>
+                            </select>
+                        </div>
                     </template>
                 </el-table-column>
                 <el-table-column prop="p_caozuo" class-name="line11" label="操作"  min-width="160">
@@ -383,6 +390,26 @@ export default {
             this.$ajax.post(this.$preix+'/new/calltask/queryCallTaskList',data)
             .then( (res) => {
                 this.tableData=res.data.rows;
+            })
+        },
+        state_select(row,state){
+            console.log(row);
+            this.$ajax.post(this.$preix+'/new/calltask/updateCallTask',{'taskId':row.id,'visibleState':state})
+            .then( (res) => {
+                if(res.data.code==200){
+                    this.$message({
+                        showClose: true,
+                        message: '修改成功',
+                        type: 'success'
+                    });
+                }
+            })
+            .catch(res=>{
+                this.$message({
+                    showClose: true,
+                    message: '修改失败哦',
+                    type: 'warning'
+                });
             })
         }
     },

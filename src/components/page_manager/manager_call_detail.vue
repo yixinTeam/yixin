@@ -12,7 +12,7 @@
                 <el-button type="info" plain class="button" @click="search_change(true)">收起</el-button>
                 <div>
                     <p class="grey">任务名称&#12288;&#12288;</p>
-                    <p class="black" v-for=" (item,index) in mission_list" :key="index" :class="{see_active:mission_state.indexOf(index)!=-1}" @click="mission_change(index)">{{item.taskName}}</p>
+                    <p class="black" v-for=" (item,index) in mission_list" :key="index" :class="{see_active:mission_state==index}" @click="mission_change(index)">{{item.taskName}}</p>
                 </div>
                 <div>
                     <p class="grey">客户状态&#12288;&#12288;</p>
@@ -39,7 +39,8 @@
                 <el-button type="info" plain class="button" @click="search_change(false)">展开</el-button>
                 <div>
                     <p class="black">筛选条件&#12288;&#12288;</p>
-                    <p class="black see_active">任务名称：<span v-for="(item,index) in mission_state" :key="index">{{mission_list[item].taskName}};</span></p>
+                    <!-- <p class="black see_active">任务名称：<span v-for="(item,index) in mission_state" :key="index">{{mission_list[item].taskName}};</span></p> -->
+                    <p class="black see_active">任务名称：{{mission_list[mission_state].taskName}}</p>
                     <p class="black see_active">客户状态：{{custom_list[custom_state].value}}</p>
                     <p class="black see_active">最近通话情况：{{call_list[call_state].value}}</p>
                     <el-tag type="info" class="tag" v-if="close_date!=null&&close_date.length>0">{{'最近通话： '+close_date[0]+'~'+close_date[1]}}</el-tag>
@@ -237,20 +238,21 @@ export default {
             this.mission_search();
         },
         mission_change:function(value){
-            if(this.mission_state.indexOf(value)==-1&&value!=0){
-                this.mission_state.push(value);
-                for(let i in this.mission_state){
-                    if(this.mission_state[i]==0){
-                        //delete this.mission_state[i];
-                        this.mission_state.splice(i,1);
-                    }
-                }
-            }else if(this.mission_state.indexOf(value)!=-1&&this.mission_state.length>1){
-                var index=this.mission_state.indexOf(value);
-                this.mission_state.splice(index,1);
-            }else if(value==0){
-                this.mission_state=[0];
-            }
+            this.mission_state=value;
+            // if(this.mission_state.indexOf(value)==-1&&value!=0){
+            //     this.mission_state.push(value);
+            //     for(let i in this.mission_state){
+            //         if(this.mission_state[i]==0){
+            //             //delete this.mission_state[i];
+            //             this.mission_state.splice(i,1);
+            //         }
+            //     }
+            // }else if(this.mission_state.indexOf(value)!=-1&&this.mission_state.length>1){
+            //     var index=this.mission_state.indexOf(value);
+            //     this.mission_state.splice(index,1);
+            // }else if(value==0){
+            //     this.mission_state=[0];
+            // }
             this.mission_search();
         },
         task_init(){
@@ -277,7 +279,8 @@ export default {
         },
         //条件搜索
         mission_search(){
-            let taskIds=this.mission_state.map(item=>this.mission_list[item].taskId);
+            let taskIds=this.mission_list[this.mission_state].taskId;
+            //let taskIds=this.mission_state.map(item=>this.mission_list[item].taskId);
             if(this.close_date!=undefined||this.close_date!=null){
                 var data={'seatAccountId':this.$route.query.id,"requireTotalCount" : true,beginDay:this.close_date[0],endDay:this.close_date[1],'taskIds':taskIds,userResults:this.custom_list[this.custom_state].key,callResults:this.call_list[this.call_state].key};
             
@@ -295,7 +298,7 @@ export default {
         //页码改变
         page_change(val){
             this.pageNum=val;
-            let taskIds=this.mission_state.map(item=>this.mission_list[item].taskId);
+            let taskIds=this.mission_list[this.mission_state].taskId;
             if(this.close_date!=undefined||this.close_date!=null){
                 var data={'seatAccountId':this.$route.query.id,"requireTotalCount" : true,beginDay:this.close_date[0],endDay:this.close_date[1],'taskIds':taskIds,userResults:this.custom_list[this.custom_state].key,callResults:this.call_list[this.call_state].key,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField};
             
@@ -314,7 +317,7 @@ export default {
         sort_change({column, prop, order} ){
             this.orderWay=order.split('ending')[0];
             this.orderField=prop;
-            let taskIds=this.mission_state.map(item=>this.mission_list[item].taskId);
+            let taskIds=this.mission_list[this.mission_state].taskId;
             if(this.close_date!=undefined||this.close_date!=null){
                 var data={'seatAccountId':this.$route.query.id,"requireTotalCount" : true,beginDay:this.close_date[0],endDay:this.close_date[1],'taskIds':taskIds,userResults:this.custom_list[this.custom_state].key,callResults:this.call_list[this.call_state].key,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField};
             

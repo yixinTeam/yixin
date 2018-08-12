@@ -186,7 +186,8 @@ export default {
 		return {
       alive:true,
       notify:'3',
-      identity:null
+      identity:null,
+      stompClient:null
 		};
 	},
 	methods: {
@@ -204,6 +205,50 @@ export default {
     },
     test(){
       location.href=this.$preix+'/logout'
+    },
+    getCookie(c_name){
+        if (document.cookie.length > 0) {
+            var arrCookie=document.cookie.split("; ");
+            for(var i=0;i<arrCookie.length;i++){
+                var arr=arrCookie[i].split("=");
+                //找到名称为userId的cookie，并返回它的值
+                if(c_name==arr[0]){
+                    return arr[1];
+                }
+            }
+        }
+    },
+    connect:function () {
+        var _this=this;
+        // websocket的连接地址，此值等于WebSocketMessageBrokerConfigurer中registry.addEndpoint("/icc/websocket").withSockJS()配置的地址
+        var socket = new SockJS(this.$preix+'/ws/icc/websocket');
+        this.stompClient = Stomp.over(socket);
+        this.stompClient.connect({}, function(frame) {
+            console.log('Connected: ' + frame);
+            _this.stompClient.subscribe(
+                '/user/topic/ws',
+                function(respnose){
+                    _this.showResponse(JSON.parse(respnose.body));
+                }
+            );
+        });
+    },
+    disconnect:function () {
+        if (this.stompClient != null) {
+            this.stompClient.disconnect();
+            
+        console.log('关闭websocket')
+        }
+        console.log("Disconnected");
+    },
+    showResponse:function (result) {
+      console.log(result);
+        if(result.channelType == 2 && result.directType == 3003){
+            
+            console.log("客户已接起");
+        }else if(result.directType == 3006){
+            console.log("已挂断");
+        }
     }
   },
 	provide(){
@@ -212,7 +257,18 @@ export default {
     }
   },
   mounted(){
-    this.identity=this.$route.query.userId;
+    console.log('组建渲染');
+    this.identity=this.getCookie('loginName');
+    var data={
+        'name':'qy1','password':md5.md5('224139'),'password2':'123456'
+    };
+    this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
+        data
+    );
+    this.connect();
+  },
+  created(){
+    console.log('组建创建')
   }
 };
 </script>

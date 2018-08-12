@@ -52,34 +52,35 @@
             <el-button type="info" plain class="button" @click="search()">搜索收起</el-button>
             <div>
                 <p class="grey">任务名称&#12288;&#12288;</p>
-                <p v-for="(item,index) in mission_list" :key="index" class="black" :class="{worker_active:mission_active.indexOf(index)!=-1}" @click="mission_change(index)">{{item.taskName}}</p>
+                <p v-for="(item,index) in mission_list" :key="index" class="black" :class="{worker_active:mission_active==index}" @click="mission_change(index)">{{item.taskName}}</p>
             </div>
             <div>
                 <p class="grey">客户状态&#12288;&#12288;</p>
-                <p v-for="(item,index) in custom_list" :key="index" class="black" :class="{worker_active:custom_active.indexOf(index)!=-1}" @click="custom_change(index)">{{item.value}}</p>
+                <p v-for="(item,index) in custom_list" :key="index" class="black" :class="{worker_active:custom_active==index}" @click="custom_change(index)">{{item.value}}</p>
             </div>
             <div>
                 <p class="grey">最近通话情况</p>
-                <p v-for="(item,index) in call_list" :key="index" class="black" :class="{worker_active:call_active.indexOf(index)!=-1}" @click="call_change(index)">{{item.value}}</p>
+                <p v-for="(item,index) in call_list" :key="index" class="black" :class="{worker_active:call_active==index}" @click="call_change(index)">{{item.value}}</p>
             </div>
         </div>
         <div class="zhankai" v-if="search_state">
             <el-button type="info" plain class="button" @click="search_change(false)">展开</el-button>
             <div>
                 <p class="grey">筛选条件</p>
-                 <p class="black worker_active">任务名称：<span v-for="(item,index) in mission_active" :key="index">{{mission_list[item].taskName}};</span></p>
+                <p class="black worker_active">任务名称：{{mission_list[mission_active].taskName}}</p>
+                 <!-- <p class="black worker_active">任务名称：<span v-for="(item,index) in mission_active" :key="index">{{mission_list[item].taskName}};</span></p> -->
                 <p class="black worker_active">客户状态：{{custom_list[custom_active].value}}</p>
                 <p class="black worker_active">最近通话情况：  {{call_list[call_active].value}}</p>
             </div>
         </div>
-        <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table" @sort-change="sort_change">
-            <el-table-column prop="userName" label="客户姓名" class-name="line1" label-class-name="line1_tit" sortable='custom' :show-overflow-tooltip=true min-width="80">
+        <el-table :data="tableData" style="width: 100%" :default-sort = "{prop: 'date', order: 'descending'}" class="table">
+            <el-table-column prop="userName" label="客户姓名" class-name="line1" label-class-name="line1_tit" :show-overflow-tooltip=true min-width="80">
                 <template slot-scope="scope">
                     {{scope.row.userName}}
                 </template>
             </el-table-column>
             <el-table-column prop="userNumber" label="客户号码" class-name="line2"  :show-overflow-tooltip=true> </el-table-column>
-            <el-table-column prop="taskName" label="所属任务" class-name="line4" sortable='custom' :show-overflow-tooltip=true> </el-table-column>
+            <el-table-column prop="taskName" label="所属任务" class-name="line4" :show-overflow-tooltip=true> </el-table-column>
             <el-table-column label="客户状态" class-name="line5" :show-overflow-tooltip=true>
                 <!-- 0：预留 1：继续跟进 2：发展成功 3：发展失败 -->
                 <template slot-scope="scope">
@@ -100,10 +101,10 @@
                     <span v-if="scope.row.callResult==22">未接通</span>
                 </template>
             </el-table-column>
-            <el-table-column prop="hangupTime" label="最近通话时间" class-name="line7" sortable='custom' :show-overflow-tooltip=true min-width="100"> </el-table-column>
-            <el-table-column prop="callDurationDesc" label="通话时长" class-name="line8" sortable='custom' :show-overflow-tooltip=true>
+            <el-table-column prop="hangupTime" label="最近通话时间" class-name="line7" :show-overflow-tooltip=true min-width="100"> </el-table-column>
+            <el-table-column prop="callDurationDesc" label="通话时长" class-name="line8" :show-overflow-tooltip=true>
             </el-table-column>
-            <el-table-column prop="nextContactTime" label="下次联系时间" class-name="line9" sortable='custom' :show-overflow-tooltip=true min-width="120"> </el-table-column>
+            <el-table-column prop="nextContactTime" label="下次联系时间" class-name="line9" :show-overflow-tooltip=true min-width="120"> </el-table-column>
             <el-table-column prop="recordFilePath" label="通话录音" class-name="line10" :show-overflow-tooltip=true min-width="100">
                 <template slot-scope="scope">
                     {{scope.row.key9}}
@@ -255,57 +256,60 @@ export default {
             }
         },
         mission_change:function(value){
-            let _this=this;
-            if(this.mission_active.indexOf(value)==-1&&value!=0){
-                this.mission_active.push(value);
-                for(let i in this.mission_active){
-                    if(this.mission_active[i]==0){
-                        //delete this.mission_active[i];
-                        _this.mission_active.splice(i,1);
-                    }
-                }
-            }else if(this.mission_active.indexOf(value)!=-1&&this.mission_active.length>1){
-                var index=this.mission_active.indexOf(value);
-                this.mission_active.splice(index,1);
-            }else if(value==0){
-                this.mission_active=[0];
-            };
+            this.mission_active=value;
+            // let _this=this;
+            // if(this.mission_active.indexOf(value)==-1&&value!=0){
+            //     this.mission_active.push(value);
+            //     for(let i in this.mission_active){
+            //         if(this.mission_active[i]==0){
+            //             //delete this.mission_active[i];
+            //             _this.mission_active.splice(i,1);
+            //         }
+            //     }
+            // }else if(this.mission_active.indexOf(value)!=-1&&this.mission_active.length>1){
+            //     var index=this.mission_active.indexOf(value);
+            //     this.mission_active.splice(index,1);
+            // }else if(value==0){
+            //     this.mission_active=[0];
+            // };
             this.search();
         },
         custom_change:function(value){
-            let _this=this;
-            if(this.custom_active.indexOf(value)==-1&&value!=0){
-                this.custom_active.push(value);
-                for(let i in this.custom_active){
-                    if(this.custom_active[i]==0){
-                        //delete this.custom_active[i];
-                        _this.custom_active.splice(i,1);
-                    }
-                }
-            }else if(this.custom_active.indexOf(value)!=-1&&this.custom_active.length>1){
-                var index=this.custom_active.indexOf(value);
-                this.custom_active.splice(index,1);
-            }else if(value==0){
-                this.custom_active=[0];
-            };
+            this.custom_active=value;
+            // let _this=this;
+            // if(this.custom_active.indexOf(value)==-1&&value!=0){
+            //     this.custom_active.push(value);
+            //     for(let i in this.custom_active){
+            //         if(this.custom_active[i]==0){
+            //             //delete this.custom_active[i];
+            //             _this.custom_active.splice(i,1);
+            //         }
+            //     }
+            // }else if(this.custom_active.indexOf(value)!=-1&&this.custom_active.length>1){
+            //     var index=this.custom_active.indexOf(value);
+            //     this.custom_active.splice(index,1);
+            // }else if(value==0){
+            //     this.custom_active=[0];
+            // };
             this.search();
         },
         call_change:function(value){
-            let _this=this;
-            if(this.call_active.indexOf(value)==-1&&value!=0){
-                this.call_active.push(value);
-                for(let i in this.call_active){
-                    if(this.call_active[i]==0){
-                        //delete this.call_active[i];
-                        _this.call_active.splice(i,1);
-                    }
-                }
-            }else if(this.call_active.indexOf(value)!=-1&&this.call_active.length>1){
-                var index=this.call_active.indexOf(value);
-                this.call_active.splice(index,1);
-            }else if(value==0){
-                this.call_active=[0];
-            };
+            this.call_active=value
+            // let _this=this;
+            // if(this.call_active.indexOf(value)==-1&&value!=0){
+            //     this.call_active.push(value);
+            //     for(let i in this.call_active){
+            //         if(this.call_active[i]==0){
+            //             //delete this.call_active[i];
+            //             _this.call_active.splice(i,1);
+            //         }
+            //     }
+            // }else if(this.call_active.indexOf(value)!=-1&&this.call_active.length>1){
+            //     var index=this.call_active.indexOf(value);
+            //     this.call_active.splice(index,1);
+            // }else if(value==0){
+            //     this.call_active=[0];
+            // };
             this.search();
         },
         search_change:function(value){
@@ -349,9 +353,14 @@ export default {
                 var beginTime=this.date_init(new Date(new Date().getTime() - this.time_past*24*60*60*1000));
                 var endTime=this.date_init(new Date());
             }
-            let taskIds=this.mission_active.map(item=>this.mission_list[item].taskId);
+            // let taskIds=this.mission_active.map(item=>this.mission_list[item].taskId);
+            // let userResults=this.custom_active.map(item=>this.custom_list[item].key);
+            // let callResults=this.call_active.map(item=>this.call_list[item].key);
+            let taskIds=this.mission_list[this.mission_active].taskId;
+            let userResults=this.custom_list[this.custom_active].key;
+            let callResults=this.call_list[this.call_active].key;
             var data={
-                'beginDay':beginTime,'endDay':endTime,"requireTotalCount" : true,'taskIds':taskIds,userResults:this.custom_list[this.custom_active].key,callResults:this.call_list[this.call_active].key
+                'beginDay':beginTime,'endDay':endTime,"requireTotalCount" : true,'taskIds':taskIds,userResults:userResults,callResults:callResults
             }
             for (let key in data){
                 if(data[key]==''){
@@ -370,7 +379,7 @@ export default {
                 var beginTime=this.date_init(new Date(new Date().getTime() - this.time_past*24*60*60*1000));
                 var endTime=this.date_init(new Date());
             }
-            let taskIds=this.mission_active.map(item=>this.mission_list[item].taskId);
+            let taskIds=this.mission_list[this.mission_active].taskId;
             var data={
                 'beginDay':beginTime,'endDay':endTime,"requireTotalCount" : true,'taskIds':taskIds,userResults:this.custom_list[this.custom_active].key,callResults:this.call_list[this.call_active].key,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField
             }
@@ -392,7 +401,7 @@ export default {
                 var beginTime=this.date_init(new Date(new Date().getTime() - this.time_past*24*60*60*1000));
                 var endTime=this.date_init(new Date());
             }
-            let taskIds=this.mission_active.map(item=>this.mission_list[item].taskId);
+            let taskIds=this.mission_list[this.mission_active].taskId;
             var data={
                 'beginDay':beginTime,'endDay':endTime,"requireTotalCount" : true,'taskIds':taskIds,userResults:this.custom_list[this.custom_active].key,callResults:this.call_list[this.call_active].key,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField
             }

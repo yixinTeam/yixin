@@ -170,8 +170,8 @@ li{
   margin: 10px 10px 0;
 }
 .father>span{
+    display: inline-block;
     white-space: nowrap; 
-    overflow: hidden;
     text-overflow: ellipsis;
 }
 .father input{
@@ -195,10 +195,11 @@ li{
   padding: 2px;
 }
 .father p{
+  display: inline-block;
   margin: 0;
 }
 .father:hover input,.father:hover select{
-  display:inline ;
+  display:inline-block ;
 }
 .father:hover p,.father:hover span{
   display:none ;
@@ -277,6 +278,7 @@ li{
 }
 .el-submenu__title>div{
   padding: 0 15px!important;
+  width: auto!important;
 }
 .el-aside{
   background-color: #4B4D50;
@@ -293,6 +295,9 @@ li{
   background-color: #fff;
   padding: 10px;
 }
+.el-menu{
+  border-right:unset;
+}
 .el-menu-item-group__title{
   display: none;
 }
@@ -307,4 +312,38 @@ li{
 }
 .curson{
   cursor: pointer;
+}
+.aplayer{
+  overflow: unset!important;
+}
+.aplayer-music{
+  display: none;
+}
+.aplayer-info{
+  padding: 0 4px!important;
+  height: auto!important;
+  overflow: unset!important;
+}
+.aplayer-pic{
+  background-image: unset!important;
+  height: 18px!important;
+  width: 18px!important;
+}
+.aplayer-pause,.aplayer-play{
+  width: 16px!important;
+  height: 16px!important;
+  border: unset!important; 
+  bottom: 1px!important; 
+  right: 1px!important;
+  margin: 0!important;
+}
+.aplayer-icon-play{
+  position: absolute!important;
+  top: 2px!important;
+  left: 2px!important;
+  height: 12px!important;
+  width: 12px!important;
+}
+.aplayer-volume-bar-wrap{
+  z-index: 9!important;
 }

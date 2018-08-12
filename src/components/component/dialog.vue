@@ -14,7 +14,7 @@
             </div>
           </div>
           <div class="note">
-            请先<router-link :to="{path:'/icc-interface/templets/callTaskImportTemplet.xlsx'}">下载客户资源模板</router-link>，按照格式填写数据并上传。<br>
+            请先<router-link :to="{path:'../../assets/callTaskImportTemplet.xlsx'}">下载客户资源模板</router-link>，按照格式填写数据并上传。<br>
             请注意：<br>
             • 不要修改模板格式，以免数据读取失败；<br>
             • 同一呼叫任务内手机号相同的客户信息将会被覆盖；<br>
@@ -155,6 +155,9 @@
                         message: res.data.message,
                         type: 'warning'
                     });
+                    setTimeout(function(){
+                      this.reload();
+                    },1500)
                   }
               });
             },

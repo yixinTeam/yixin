@@ -35,7 +35,7 @@
                     </div>
                 </div>
                 <el-input size="small" :style="{'width':'90%'}" class="search"
-                    placeholder="输入客户姓名或手机号后回车进行搜索"
+                    placeholder="输入客户姓名或手机号后回车搜索"
                     prefix-icon="el-icon-search"
                     v-model="search"  @keyup.enter.native="search_task()">
                 </el-input>
@@ -130,10 +130,13 @@
                     </div>
                     <br><br>
                     <div class="father">
-                        <p class="black" :style="{'font-weight':'700'}">{{name}}</p>
+                        <!-- <p class="black" :style="{'font-weight':'700'}">{{name}}</p> -->
+                        <el-tooltip class="item" effect="dark"  placement="right">
+                            <div slot="content" :style="{'min-width':'200px'}">{{name}}</div>
+                            <p class="black" :style="{'font-weight':'700'}">{{name}}</p>
+                        </el-tooltip>
                         <input type="text" v-model="name" @blur="upSeat">
                     </div>
-                    
                     <p class="black">{{phone}}</p>
                 </div>
                 <div class="mes3">
@@ -191,9 +194,9 @@
                 </div>
                 <div class="tag">
                     <p class="grey" :style="{'float':'left','margin':'0 7px','line-height':'26px'}">客户标签</p>
-                    <el-dropdown :hide-on-click="false" v-for="(item,index) in history.summaryDto.tags" :key="index"  @command="handleCommand" :style="{'float':'left','line-height':'26px'}">
+                    <el-dropdown v-for="(item,index) in history.summaryDto.tags" :key="index"  @command="handleCommand" :style="{'float':'left','line-height':'26px'}">
                         <span class="el-dropdown-link">
-                            {{item.tagName}}<i class="el-icon-arrow-down el-icon--right"></i>
+                            {{item.value?item.value:item.tagName}}<i class="el-icon-arrow-down el-icon--right"></i>
                         </span>
                         <el-dropdown-menu slot="dropdown">
                             <el-dropdown-item v-for="(_item,_index) in item.taglist" :key="_index" :command="{'index':index,'value':_item}">{{_item}}</el-dropdown-item>
@@ -900,7 +903,11 @@ export default {
         call_init:function(hasGetUserMedia) {
             var _this=this;
             if(hasGetUserMedia){
-                alert("当前浏览器不支持，请更换其他浏览器(推荐Google Chrome浏览器)");
+                this.$message({
+                    showClose: true,
+                    message: '当前浏览器不支持，请更换其他浏览器(推荐Google Chrome浏览器)',
+                    type: 'warning'
+                });
                 return;
             }
             this.$ajax.post(this.$preix+'/new/seatWorkbench/getWorkbenchRst')
@@ -1033,7 +1040,7 @@ export default {
         },
         //获取客户详情
         detail_init(item,type){
-            console.log(this.TaskBySeat_data,this.$refs.tree,this.$refs.tree.getCheckedKeys())
+            console.log(this.TaskBySeat_data,this.TaskBySeat_data,this.DialPlanIntroWithPage_data,this.$refs.tree.getCheckedKeys())
             this.show=false;
             this.time_next='';
             this.call_auto_init=false;
@@ -1064,7 +1071,6 @@ export default {
                     this.company=res.data.info.userCompany?res.data.info.userCompany:'';
                     this.email=res.data.info.userEmail?res.data.info.userEmail:'';
                     this.think=res.data.info.desc?res.data.info.desc:'';
-                    this.note='';
                     this.taskClientId=item.taskClientId;
                     this.taskId=item.taskId;
                     this.partnerAccountId=res.data.info.partnerAccountId;
@@ -1073,8 +1079,15 @@ export default {
             this.$ajax.post(this.$preix+'/new/seatWorkbench/findSummaryAndHistoryDetail',{'taskClientId':item.taskClientId,'taskId':item.taskId})
             .then( (res) => {
                 if(res.status==200){
-                    if(res.data.summaryDto.tags[0]!=undefined){
-                        res.data.summaryDto.tags[0].taglist=res.data.summaryDto.tags[0].tagValue.split(';');
+                    if(res.data.summaryDto.tags!=undefined){
+                        for(var i=0;i<res.data.summaryDto.tags.length;i++){
+                            res.data.summaryDto.tags[i].taglist=res.data.summaryDto.tags[i].tagValue.split(';');
+                        }
+                    }
+                    if(res.data.historyDto&&res.data.historyDto.details[0].desc!=undefined){
+                        this.note=res.data.historyDto.details[0].desc;
+                    }else{
+                        this.note='';
                     }
                     console.log(res.data);
                     this.history=res.data;
@@ -1083,7 +1096,7 @@ export default {
         },
         //设置呼叫任务计划
         TaskBySeat_init(data){
-            this.TaskBySeat_data=[];
+            var arr=[];
             this.$ajax.post(this.$preix+'/new/seatWorkbench/queryTaskIntroBySeat',data
             ).then( res=>{
             if(res.data.code==200){
@@ -1099,20 +1112,20 @@ export default {
                         this.$ajax.post(this.$preix+'/new/seatWorkbench/queryProcClientWithTaskBySeat',param
                         ).then( res=>{
                             if(res.data.code==200){
-                                
                                 res.data.rows.map(item=>{item.label=item.userName;item.taskId=id;item.id=item.taskClientId});
                                 //res.data.rows.map(item=>item.taskId=id);
                                 obj.children=res.data.rows;
                             }
-                            _this.TaskBySeat_data.push(obj);
+                            arr.push(obj);
                         });
                     }
+                    _this.TaskBySeat_data=arr;
                 }
             })
         },
         //新增呼叫计划列表
         DialPlanIntroWithPage_init(data){
-            this.DialPlanIntroWithPage_data=[];
+            var arr=[];
             this.$ajax.post(this.$preix+'/new/seatWorkbench/queryDialPlanIntroWithPage',data
             ).then( res=>{
             if(res.data.code==200){
@@ -1134,9 +1147,10 @@ export default {
                                 });
                                 obj.children=res.data.rows;
                             }
-                            _this.DialPlanIntroWithPage_data.push(obj);
+                            arr.push(obj);
                         });
                     }
+                    _this.DialPlanIntroWithPage_data=arr;
                 }
             })
         },
@@ -1195,6 +1209,8 @@ export default {
         },
         //记录客户标签
         handleCommand(command) {
+            console.log(command,this.history.summaryDto)
+            this.$set(this.history.summaryDto.tags[command.index], 'value',command.value);
             this.tags[command.index]={'value':command.value};
         },
         //关闭弹窗
@@ -1227,7 +1243,7 @@ export default {
         //提交小结
         update(){
             if(this.callIccSessionId){
-                let data={'desc':this.think,'nextContactTime':this.time_next,'taskId':this.taskId,'taskClientId':this.taskClientId,'userResult':this.worker_state,'taskListId':this.id,'sessionId':this.callIccSessionId}
+                let data={'desc':this.note,'nextContactTime':this.time_next,'taskId':this.taskId,'taskClientId':this.taskClientId,'userResult':this.worker_state,'taskListId':this.id,'sessionId':this.callIccSessionId}
                 for(let i=0;i<this.tags.length;i++){
                     if(this.tags[i]!=null||this.tags[i]!=undefined){
                         var str='customTag'+(i+1);
@@ -1247,8 +1263,10 @@ export default {
                             if(i<(items.children.length-1)&&i!=-1){
                                 if(_this.worker_state!='1'){
                                     _this.TaskBySeat_data[index].children.splice(i,1);
+                                    _this.detail_init(items.children[i],1);
+                                }else if(_this.worker_state=='1'){
+                                    _this.detail_init(items.children[i+1],1);
                                 }
-                                _this.detail_init(items.children[i],1);
                                 _this.$refs.tree.setCheckedKeys([items.children[i+1].id]);
                                 if(_this.call_auto=='true'){
                                     _this.call_state=5;
@@ -1258,10 +1276,22 @@ export default {
                                         _this.startCallTimeOut();
                                     },_this.call_remin*1000)
                                 }
-                            }else if(i==(items.children.length-1)){
+                            }else if(i==(items.children.length-1)&&items.children.length==1){
                                 console.log('到底了')
                                 _this.call_hidden=true;
-                                _this.TaskBySeat_data.splice(index,1);
+                                if(_this.worker_state!='1'){
+                                    _this.TaskBySeat_data.splice(index,1);
+                                }else if(_this.worker_state=='1'){
+                                    return;
+                                }
+                            }else if(i==(items.children.length-1)&&items.children.length>1){
+                                console.log('到底了')
+                                _this.call_hidden=true;
+                                if(_this.worker_state!='1'){
+                                    _this.TaskBySeat_data[index].children.splice(i,1);
+                                }else if(_this.worker_state=='1'){
+                                    return;
+                                }
                             }
                         })
                         this.DialPlanIntroWithPage_data.map((items,index)=>{
@@ -1269,9 +1299,10 @@ export default {
                             if(i<items.children.length-1&&i!=-1){
                                 if(_this.worker_state!='1'){
                                     _this.DialPlanIntroWithPage_data[index].children.splice(i,1);
+                                    _this.detail_init(items.children[i],2);
+                                }else if(_this.worker_state=='1'){
+                                    _this.detail_init(items.children[i+1],2);
                                 }
-                                _this.detail_init(items.children[i],2);
-                                console.log(items.children[i+1],items.children[i+1].id)
                                 _this.$refs.tree.setCheckedKeys([items.children[i+1].id]);
                                 if(_this.call_auto=='true'){
                                     _this.call_state=5;
@@ -1281,19 +1312,35 @@ export default {
                                         _this.startCallTimeOut();
                                     },_this.call_remin*1000)
                                 }
-                            }else if(i==(items.children.length-1)){
+                            }else if(i==(items.children.length-1)&&items.children.length==1){
                                 _this.call_hidden=true;
-                                _this.DialPlanIntroWithPage_data.splice(index,1);
+                                if(_this.worker_state!='1'){
+                                    _this.DialPlanIntroWithPage_data.splice(index,1);
+                                }else if(_this.worker_state=='1'){
+                                    return;
+                                }
+                            }else if(i==(items.children.length-1)&&items.children.length>1){
+                                console.log('到底了')
+                                _this.call_hidden=true;
+                                if(_this.worker_state!='1'){
+                                    _this.DialPlanIntroWithPage_data[index].children.splice(i,1);
+                                }else if(_this.worker_state=='1'){
+                                    return;
+                                }
                             }
                         });
-                        console.log(this.booklist.length)
                         if(this.booklist.length>0){
                             this.booklist.map((items,index)=>{
                                 if(items==_this.active_data&&index!=(_this.booklist.length-1)){
-                                    _this.booklist.splice(index,1);
-                                    _this.detail_init(_this.booklist[index],2);
+                                    if(_this.worker_state!='1'){
+                                        _this.booklist.splice(index,1);
+                                        _this.detail_init(_this.booklist[index],2);
+                                    }else if(_this.worker_state=='1'){
+                                        _this.detail_init(_this.booklist[index+1],2);
+                                    }
                                 }else if(items==_this.active_data&&index==(_this.booklist.length-1)){
                                     //console.log('bug')
+                                    _this.booklist.splice(index,1);
                                     _this.call_hidden=true;
                                 }
                             });
@@ -1355,7 +1402,11 @@ export default {
                     console.log("在本次呼叫完成并提交联系小结前，请勿执行其他操作！");
                 }
             }).catch(function(error) {
-                console.log(error);
+                this.$message({
+                    showClose: true,
+                    message: '麦克风无权限',
+                    type: 'warning'
+                });
             });
         },
         //停止自动呼叫

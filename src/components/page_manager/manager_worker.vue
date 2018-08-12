@@ -279,22 +279,38 @@ export default {
             this.$ajax.post(this.$preix+'/new/account/updateSeat',data)
             .then( (res) => {
                 if(res.data.code==200){
-                    this.reload()
+                    this.$message({
+                        showClose: true,
+                        message: '修改成功',
+                        type: 'success'
+                    });
                 }
             })
             .catch(res=>{
-                alert('修改失败哦')
+                this.$message({
+                    showClose: true,
+                    message: '修改失败哦',
+                    type: 'warning'
+                });
             })
         },
         state_select(row,state){
             this.$ajax.post(this.$preix+'/new/account/updateSeat',{'id':row.id,'state':state})
             .then( (res) => {
-                if(res.code==200){
-                    this.reload()
+                if(res.data.code==200){
+                    this.$message({
+                        showClose: true,
+                        message: '修改成功',
+                        type: 'success'
+                    });
                 }
             })
             .catch(res=>{
-                alert('修改失败哦')
+                this.$message({
+                    showClose: true,
+                    message: '修改失败哦',
+                    type: 'warning'
+                });
             })
         }
     },

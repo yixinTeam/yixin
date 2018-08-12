@@ -6,10 +6,10 @@
         <div class="title nav2 drop">
           <el-dropdown trigger="click">
           <span class="el-dropdown-link">
-            {{identity.default}}<i class="el-icon-arrow-down el-icon--right"></i>
+            {{identity}}<i class="el-icon-arrow-down el-icon--right"></i>
           </span>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>张领导</el-dropdown-item>
+              <el-dropdown-item>{{identity}}</el-dropdown-item>
               <el-dropdown-item @click.native="test">
                   登出
               </el-dropdown-item>
@@ -195,7 +195,7 @@ export default {
       alive:true,
 			notify: '3',
 			isCollapse: false,
-			identity: { list: [{ states: '坐席2333', key: '1' }, { states: '登出', key: '2' }], default: '坐席2333' },
+			identity:null,
 		};
 	},
 	methods: {
@@ -219,6 +219,18 @@ export default {
     },
     test(){
       location.href=this.$preix+'/logout'
+    },
+    getCookie(c_name){
+        if (document.cookie.length > 0) {
+            var arrCookie=document.cookie.split("; ");
+            for(var i=0;i<arrCookie.length;i++){
+                var arr=arrCookie[i].split("=");
+                //找到名称为userId的cookie，并返回它的值
+                if(c_name==arr[0]){
+                    return arr[1];
+                }
+            }
+        }
     }
 	},
 	provide(){
@@ -227,12 +239,13 @@ export default {
     }
   },
   mounted(){
-    // var data={
-    //     'name':'qy1003','password':md5.md5('qy1003'),'password2':'123456'
-    // };
-    // this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
-    //     data
-    // )
+    this.identity=this.getCookie('loginName');
+    var data={
+        'name':'qy1003','password':md5.md5('qy1003'),'password2':'123456'
+    };
+    this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
+        data
+    )
   }
 };
 </script>

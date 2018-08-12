@@ -322,9 +322,11 @@ export default {
                 callCredit: [
                     { type: 'number', required: false, message: '请输入正确的信用资源', trigger: 'blur' }
                 ]
-            }
+            },
+            active_data:null
         }
     },
+    components:{Dialog},
     methods:{
         worker_change:function(value){
             this.worker_state=value;
@@ -383,6 +385,8 @@ export default {
             this.manager_init(data);
         },
         handleDetail(index,row){
+            console.log(row);
+            this.active_data=row;
             this.$ajax.post(this.$preix+'/new/account/accountDetailView',{'id':row.id}).then(res=>{
                 if(res.data.code==200){
                     this.Form=res.data.info;
@@ -462,7 +466,7 @@ export default {
         },
         //充值
         charge(){
-            this.$ajax.post(this.$preix+'/new/account/updateCompanyCallRemaining')
+            this.$ajax.post(this.$preix+'/new/account/updateCompanyCallRemaining',{'accountPid':this.active_data.id,'callRemaining':this.charge_nums})
             .then( (res) => {
                 if(res.data.code==200){
                     this.charges=false;

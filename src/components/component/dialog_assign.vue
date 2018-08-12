@@ -228,8 +228,11 @@ export default {
         },
         check(){
             var result=true;
+            var a=0;
             for(var i=0;i<this.workernum.length;i++){
                 if(this.workernum[i]!=''){
+                    
+                    a=a+parseInt(this.workernum[i]);
                     result=false;
                 }
                 if(this.workernum[i]>this.total){
@@ -244,6 +247,13 @@ export default {
                 this.$message({
                     showClose: true,
                     message: '请输入分配数量',
+                    type: 'warning'
+                });
+            }
+            if(a>this.total){
+                this.$message({
+                    showClose: true,
+                    message: '输入的分配数量已大于可分配的客户总量',
                     type: 'warning'
                 });
             }
