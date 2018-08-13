@@ -129,7 +129,7 @@
                         </div>
                     </div>
                     <br><br>
-                    <div class="father">
+                    <div class="father2">
                         <!-- <p class="black" :style="{'font-weight':'700'}">{{name}}</p> -->
                         <el-tooltip class="item" effect="dark"  placement="right">
                             <div slot="content" :style="{'min-width':'200px'}">{{name}}</div>

@@ -209,7 +209,7 @@ export default {
             label_list:[],
             tag_list:[],
             mission_list:[],
-            mission_state:[0],
+            mission_state:0,
             pickerOptions:{
                 disabledDate:(time)=>{
                     return time.getTime()<new Date(this.$route.query.days[0]).getTime()||time.getTime()>new Date(this.$route.query.days[1]).getTime()

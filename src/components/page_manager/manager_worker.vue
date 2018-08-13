@@ -23,6 +23,7 @@
                     <el-date-picker
                     v-model="search_date"
                     type="daterange"
+                    @change="date_change"
                     range-separator="-"
                     start-placeholder="开始日期"
                     end-placeholder="结束日期" size="mini" prefix-icon="date_icon el-icon-date" class="date_picker" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd">
@@ -246,6 +247,17 @@ export default {
             }
             this.seat_init(data);
         },
+        date_change(){
+            var data={
+                'state':this.worker_state,'startTime':this.search_date!=null?this.search_date[0]:"",'endTime':this.search_date!=null?this.search_date[1]:"",'requireTotalCount':true,'fullNameOrEmail':this.search
+            };
+            for (let key in data){
+                if(data[key]==''){
+                    delete data[key];
+                }
+            }
+            this.seat_init(data);
+        },
         //排序搜索
         sort_change({column, prop, order} ){
             this.orderWay=order.split('ending')[0];
@@ -318,7 +330,7 @@ export default {
         Dialog
     },
     mounted:function(){
-        this.seat_init({requireTotalCount:true,"orderField":'creat',"orderWay":'desc'});
+        this.seat_init({requireTotalCount:true,"orderField":'creat',"orderWay":'asc'});
     },
     inject:['reload']
 }

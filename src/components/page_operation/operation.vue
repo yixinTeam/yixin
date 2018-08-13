@@ -17,9 +17,7 @@
           </el-dropdown>
         </div>
         <div class="notify nav2">
-          <el-badge :value="notify">
-            <i class="el-icon-menu"></i>
-          </el-badge>
+          <notify></notify>
         </div>
       </el-row>
     </el-header>
@@ -168,16 +166,17 @@ a{
 </style>
 
 <script>
+import notify from '../component/notify.vue';
 import jm from '../js/md5.js'
 export default {
 	name: 'operation',
 	data() {
 		return {
       alive:true,
-      notify:'3',
       identity:null
 		};
-	},
+  },
+  components:{notify},
 	methods: {
 		handleOpen(key, keyPath) {
 			console.log(key, keyPath);
@@ -206,12 +205,12 @@ export default {
   },
   mounted(){
     this.identity=this.getCookie('loginName');
-    var data={
-      'name':'yw1','password':jm.md5('yw1'),'password2':'123456'
-    };
-    this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
-      data
-    )
+    // var data={
+    //   'name':'yw1','password':jm.md5('yw1'),'password2':'123456'
+    // };
+    // this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
+    //   data
+    // )
   },
 	provide(){
     return {

@@ -466,7 +466,7 @@ export default {
         },
         //充值
         charge(){
-            this.$ajax.post(this.$preix+'/new/account/updateCompanyCallRemaining',{'accountPid':this.active_data.id,'callRemaining':this.charge_nums})
+            this.$ajax.post(this.$preix+'/new/account/updateCompanyCallRemaining',{'accountPid':this.active_data.id,'callRemaining':this.charge_num})
             .then( (res) => {
                 if(res.data.code==200){
                     this.charges=false;
@@ -475,8 +475,23 @@ export default {
             
         }
     },
+    computed:{
+        nameornum(){
+            if(this.$route.query.fullNameOrEmail){
+                console.log(this.$route.query.fullNameOrEmail);
+                return this.$route.query.fullNameOrEmail;
+            }else{
+                return null;
+            }
+        }
+    },
     mounted:function(){
-        this.manager_init({requireTotalCount:true});
+        if(this.nameornum){
+            this.search=this.nameornum;
+            this.manager_init({fullNameOrEmail:this.nameornum,requireTotalCount:true});
+        }else{
+            this.manager_init({requireTotalCount:true});
+        }
     },
     inject:['reload']
 }

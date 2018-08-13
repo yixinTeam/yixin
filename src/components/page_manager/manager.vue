@@ -17,9 +17,13 @@
           </el-dropdown>
         </div>
         <div class="notify nav2">
-          <el-badge :value="notify">
+          <!-- <el-badge :value="notify" @click.native="notify_show=!notify_show">
             <i class="el-icon-menu"></i>
           </el-badge>
+          <div class="notify_mes" >
+
+          </div> -->
+          <notify></notify>
         </div>
       </el-row>
     </el-header>
@@ -139,9 +143,6 @@
   height: 100vh;
   z-index: 2;
 }
-.header{
-  overflow: hidden;
-}
 .header .nav{
   width: 170px;
   float: left;
@@ -161,7 +162,8 @@
   line-height: 53px;
 }
 .notify{
-  margin: 10px 0;
+  margin: 15px 0;
+  position: relative;
 }
 .hello{
   width: 100vw;
@@ -178,18 +180,18 @@ a{
 </style>
 
 <script>
-import selec from '../component/select.vue';
+import notify from '../component/notify.vue';
 import md5 from '../js/md5.js'
 export default {
 	name: 'manager',
 	data() {
 		return {
       alive:true,
-      notify:'3',
       identity:null,
       stompClient:null
 		};
-	},
+  },
+  components:{notify},
 	methods: {
 		handleOpen(key, keyPath) {
 			console.log(key, keyPath);
@@ -197,6 +199,7 @@ export default {
 		handleClose(key, keyPath) {
 			console.log(key, keyPath);
     },
+    
     reload(){
       this.alive=false;
       this.$nextTick(function(){
@@ -242,12 +245,8 @@ export default {
         console.log("Disconnected");
     },
     showResponse:function (result) {
-      console.log(result);
-        if(result.channelType == 2 && result.directType == 3003){
-            
-            console.log("客户已接起");
-        }else if(result.directType == 3006){
-            console.log("已挂断");
+        if(result.msgType){
+            this.notify++;
         }
     }
   },
@@ -257,18 +256,14 @@ export default {
     }
   },
   mounted(){
-    console.log('组建渲染');
     this.identity=this.getCookie('loginName');
-    var data={
-        'name':'qy1','password':md5.md5('224139'),'password2':'123456'
-    };
-    this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
-        data
-    );
+    // var data={
+    //     'name':'qy1','password':md5.md5('224139'),'password2':'123456'
+    // };
+    // this.$ajax.post('https://10.240.80.72:8443/icc-interface/new/loginValidate',
+    //     data
+    // );
     this.connect();
-  },
-  created(){
-    console.log('组建创建')
   }
 };
 </script>

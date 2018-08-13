@@ -1,88 +1,53 @@
 <template>
-    <div class="container">
-        <a-player autoplay :music="{
-  src: 'http://10.240.80.72:10712/icc-static/2018/ring.mp3?sessionId=42375b65-e78f-4639-896a-796239866419&callSessionId=3f566e16-3c00-44b5-9ed9-8b43b1e316da'
-,title: 'Preparation',lrc: '[00:00.00]lrc here\n[00:01.00]aplayer',preload:'auto'}"></a-player>
-<audio controls>
-                            <source src="http://10.240.80.72:10712/icc-static/2018/ring.mp3?sessionId=42375b65-e78f-4639-896a-796239866419&callSessionId=3f566e16-3c00-44b5-9ed9-8b43b1e316da" type="audio/ogg">
-                            <source src="http://10.240.80.72:10712/icc-static/2018/ring.mp3?sessionId=42375b65-e78f-4639-896a-796239866419&callSessionId=3f566e16-3c00-44b5-9ed9-8b43b1e316da" type="audio/mpeg">
-                            您的浏览器不支持 audio 元素。
-                            </audio>
-
+    <div>
+        <div v-for="(item,index) in Lists" :key="index">
+<p>距离结束&nbsp;{{timeList2[index].h}}小时&nbsp;{{timeList2[index].m}}分&nbsp;{{timeList2[index].s}}秒</p>
     
-    </div>
+        </div>
+        </div>
 </template>
-<style scoped>
-    .table{
-        font-size: 14px;
-        margin-bottom: 10px;
-    }
-</style>
-
+    
 <script>
-import VueAplayer from 'vue-aplayer'
 export default {
-    name:'test',
-    data:function(){
-        return {
-            checked:[],
-            tableData: [{
-              'index':0,
-              'shortName':'fwjqy001',
-              'loginName':'张阿猫'
-            },{
-              'index':1,
-              'shortName':'fwjqy001',
-              'loginName':'张阿猫'
-            }],
-            flag:false,
-
-            musicList:'',
-
-            songList:[],
-            src:'http://10.240.80.72:10712/icc-static/2018/ring.mp3?sessionId=42375b65-e78f-4639-896a-796239866419&callSessionId=3f566e16-3c00-44b5-9ed9-8b43b1e316da'
-        }
+  name:'test',
+  data:function(){
+      return {
+          Lists:[],
+          timeList:[],
+          timeList2:[]
+      }
+  },
+  mounted(){
+      this.getMyList();   
+  },
+  methods:{
+    getMyList(){
+        var  that=this;
+        this.Lists=[{
+            orderTime:new Date().getTime()+10000
+        },{
+            orderTime:new Date().getTime()+100000
+        },{
+            orderTime:new Date().getTime()+1000000
+        },{
+            orderTime:new Date().getTime()+200000
+        }]
+        setInterval(function(){
+            that.timeList2=[];
+            for(let i in that.Lists){
+                var orderTime = that.Lists[i].orderTime;
+                that.timeList[i] = new Date(orderTime).getTime()>new Date().getTime()?Math.ceil((new Date(orderTime).getTime()-new Date().getTime())/1000):0;
+                var h = Math.floor(that.timeList[i]/3600);
+                var m = Math.floor(that.timeList[i]%3600/60);
+                var s = Math.floor(that.timeList[i]%60);
+                console.log(new Date(orderTime))
+                that.timeList2.push({'h':h,'m':m,"s":s});
+            }
+        },1000)
     },
-    components: {
-
-
-        'a-player': VueAplayer
-
-    },
-    methods:{
-        // this.$message({
-        //                 showClose: true,
-        //                 message: '输入的分配数量已大于可分配的客户总量',
-        //                 type: 'warning'
-        //             });
-        // handlefp:function(){
-        //     for (let key in data){
-        //         if(data[key]==''){
-        //             delete data[key];
-        //         }
-        //     }
-        //     res.data.rows.splice(0,0,{'taskName':'全部','taskId':''});
-        //     @sort-change="sort_change"
-        //     sortable='custom'
-        //     ,
-        // sort_change({column, prop, order} ){
-        //     console.log(column, prop, order);
-        //     this.tag_init({});
-        //window.reload();
-        // }
-        // },
-        handlexx:function(){
-            this.show = !this.show;
-        }
-    },
-    mounted(){
-        // let aplayer = this.$refs.player.control;
-
-        // aplayer.play();
-        var a=[1];
-        var b=[2];
-        b=b.concat(a);
-        console.log(b);
-    }
-}
+    tohub(n){
+            return n>9?n:('0'+n);   
+        },
+  }
+};
 </script>

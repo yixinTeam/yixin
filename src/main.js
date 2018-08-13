@@ -12,16 +12,18 @@ import VueClipboard from 'vue-clipboard2';
 Vue.config.debug = true;
 Vue.config.productionTip = false;
 axios.defaults.withCredentials = true;
-Vue.prototype.$preix = 'https://10.240.80.72:8443/icc-interface';
-// Vue.prototype.$preix = '/icc-interface';
+//Vue.prototype.$preix = 'https://10.240.80.72:8443/icc-interface';
+Vue.prototype.$preix = '/icc-interface';
 Vue.prototype.$ajax = axios;
 // axios.interceptors.response.use(res=>{
 //   switch (res.data.code){
 //     case 401 :
-//       location.href='https://10.240.80.72:8443/icc-interface/logout'
+//       this.$router.push({ path: '/login'})
+//       //location.href='https://10.240.80.72:8443/icc-interface/logout'
 //       break
 //     case 403 :
-//       location.href='https://10.240.80.72:8443/icc-interface/logout'
+//       this.$router.push({ path: '/login'})
+//       //location.href='https://10.240.80.72:8443/icc-interface/logout'
 //       break
 //   }
 //   return res;

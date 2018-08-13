@@ -263,7 +263,7 @@ export default {
             search:'',
             search_state:false,
             custom_state:0,
-            worker_state:[0],
+            worker_state:0,
             leading_date:[],
             page_count:10,
             seat:'',

@@ -215,12 +215,12 @@ export default {
             time_past:1,
             search_state:false,
             mission_list:[],
-            mission_active:[0],
+            mission_active:0,
             //0：预留 1：继续跟进 2：发展成功 3：发展失败
             custom_list:[{'key':'','value':'全部'},{'key':'1','value':'持续跟进'},{'key':'2','value':'发展成功'},{'key':'3','value':'发展失败'}],
-            custom_active:[0],
+            custom_active:0,
             call_list:[{'key':'','value':'全部'},{'key':'10','value':'正常通话'},{'key':'22','value':'未接通'}],
-            call_active:[0],
+            call_active:0,
             tableData:[],
             infos:{
                 "callTalkedNumToal" : 0,
@@ -356,9 +356,9 @@ export default {
             // let taskIds=this.mission_active.map(item=>this.mission_list[item].taskId);
             // let userResults=this.custom_active.map(item=>this.custom_list[item].key);
             // let callResults=this.call_active.map(item=>this.call_list[item].key);
-            let taskIds=this.mission_list[this.mission_active].taskId;
-            let userResults=this.custom_list[this.custom_active].key;
-            let callResults=this.call_list[this.call_active].key;
+            let taskIds=[this.mission_list[this.mission_active].taskId];
+            let userResults=[this.custom_list[this.custom_active].key];
+            let callResults=[this.call_list[this.call_active].key];
             var data={
                 'beginDay':beginTime,'endDay':endTime,"requireTotalCount" : true,'taskIds':taskIds,userResults:userResults,callResults:callResults
             }
@@ -379,9 +379,9 @@ export default {
                 var beginTime=this.date_init(new Date(new Date().getTime() - this.time_past*24*60*60*1000));
                 var endTime=this.date_init(new Date());
             }
-            let taskIds=this.mission_list[this.mission_active].taskId;
+            let taskIds=[this.mission_list[this.mission_active].taskId];
             var data={
-                'beginDay':beginTime,'endDay':endTime,"requireTotalCount" : true,'taskIds':taskIds,userResults:this.custom_list[this.custom_active].key,callResults:this.call_list[this.call_active].key,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField
+                'beginDay':beginTime,'endDay':endTime,"requireTotalCount" : true,'taskIds':taskIds,userResults:[this.custom_list[this.custom_active].key],callResults:[this.call_list[this.call_active].key],'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField
             }
             for (let key in data){
                 if(data[key]==''){
@@ -401,9 +401,9 @@ export default {
                 var beginTime=this.date_init(new Date(new Date().getTime() - this.time_past*24*60*60*1000));
                 var endTime=this.date_init(new Date());
             }
-            let taskIds=this.mission_list[this.mission_active].taskId;
+            let taskIds=[this.mission_list[this.mission_active].taskId];
             var data={
-                'beginDay':beginTime,'endDay':endTime,"requireTotalCount" : true,'taskIds':taskIds,userResults:this.custom_list[this.custom_active].key,callResults:this.call_list[this.call_active].key,'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField
+                'beginDay':beginTime,'endDay':endTime,"requireTotalCount" : true,'taskIds':taskIds,userResults:[this.custom_list[this.custom_active].key],callResults:[this.call_list[this.call_active].key],'pageNum':this.pageNum,"orderWay":this.orderWay,'orderField':this.orderField
             }
             for (let key in data){
                 if(data[key]==''){
